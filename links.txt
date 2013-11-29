@@ -1,0 +1,17 @@
+http://www.gnuplotting.org/tag/matrix/
+http://stackoverflow.com/questions/6524206/gnuplot-4d-color-plot-using-matrix-format
+http://web.archiveorange.com/archive/v/kpxQx3x1yLdoPPOhoAsR
+http://stackoverflow.com/questions/11787317/combining-gnuplot-with-a-gui-in-haskell
+http://hackage.haskell.org/package/plot
+http://hackage.haskell.org/package/plot-0.2.1/docs/Graphics-Rendering-Plot-Figure.html#t:Figure
+http://hackage.haskell.org/package/SimpleGL
+{deprecated} : http://hackage.haskell.org/package/hmatrix-0.1.0.0/docs/src/Graphics-Plot.html
+http://hackage.haskell.org/package/hmatrix-0.5.2.2/docs/Graphics-Plot.html
+
+
+## Stuff which looks more useful
+
+http://hackage.haskell.org/package/hmatrix-0.14.1.0/docs/Data-Packed-Matrix.html#t:Matrix
+http://hackage.haskell.org/package/easyplot-1.0/docs/src/Graphics-EasyPlot.html
+http://hackage.haskell.org/package/easyplot-1.0
+
