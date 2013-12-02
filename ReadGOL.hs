@@ -3,9 +3,18 @@ module ReadGOL where
 import GOL
 import Parsing
 import Data.Char
+import Data.Maybe
 
 readLife :: FilePath -> IO World
-readLife f = return $ emptyWorld (100,100)
+readLife f = do
+               file <- readFile f
+               let txt = lines file
+                   (x,y) = case parse offset (head txt) of
+                                Just (p,"") -> p
+                                _           -> (0,0)
+               print (x,y)
+               return $ emptyWorld (10,10)
+
 
 --specString :: String -> Parser Char
 --specString s | length s == 1 = char (head s)
