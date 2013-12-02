@@ -1,3 +1,5 @@
+module GOL where
+
 import Test.QuickCheck
 import Data.Maybe
 import Data.List
