@@ -28,7 +28,7 @@ runGame w | w == nextW  = printWorld w
           | otherwise   = do
                             printWorld w
                             runGame nextW
-    where nextW = w-- tick ((fst . dim w)) ((snd . dim w))
+    where nextW = tick w
 
 splitEv :: Eq a => Int -> [a] -> [[a]]
 splitEv n l = map (\m -> take n (drop m l)) [0,n..length l] \\ [[]]
@@ -42,6 +42,12 @@ tick w = World (dim w) rows
               | otherwise  = (updateCell w' x y) : iterateCells w' (x+1) y
           xs = fst (dim w)
           ys = snd (dim w)
+
+stillL :: World
+stillL = World (4,4) [replicate 4 False,
+                      [False,True,True,False],
+                      [False,True,True,False],
+                      replicate 4 False]
 
 updateCell :: World -> Int -> Int -> Bool
 updateCell w x y | ((cells w) !! y) !! x = survival
