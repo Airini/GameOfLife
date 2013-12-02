@@ -3,7 +3,6 @@ module GOL where
 import Test.QuickCheck
 import Data.Maybe
 import Data.List
---import Data.Char
 
 data World = World { dim :: Pair, cells :: [[Bool]] }
     deriving (Eq, Show)
