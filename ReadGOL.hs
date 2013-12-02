@@ -46,5 +46,14 @@ offset'' = do
              x <- nat
              return (x,y)
 
+deadCell :: Parser Bool
+deadCell = char '.' >-> success False
+
+liveCell :: Parser Bool
+liveCell = char '*' >-> success True
+
+row :: Parser [Bool]
+row = oneOrMore (deadCell +++ liveCell)
+
 
 
