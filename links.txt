@@ -15,3 +15,13 @@ http://hackage.haskell.org/package/hmatrix-0.14.1.0/docs/Data-Packed-Matrix.html
 http://hackage.haskell.org/package/easyplot-1.0/docs/src/Graphics-EasyPlot.html
 http://hackage.haskell.org/package/easyplot-1.0
 
+
+=====
+Game Of Life resources (maps, etc)
+- http://www.math.cornell.edu/~lipa/mec/lesson6.html
+- http://www.radicaleye.com/lifepage/picgloss/picgloss.html
+- http://entropymine.com/jason/life/
+- http://www.ericweisstein.com/encyclopedias/life/InfiniteGrowth.html
+
+
+
