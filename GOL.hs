@@ -40,8 +40,8 @@ tick w = World (dim w) rows
     where rows = splitEv xs (iterateCells w 0 0)
           iterateCells w' x y
               | y == ys    = []
-              | x == xs-1  = (updateCell w' x y) : iterateCells w' 0     (y+1)
-              | otherwise  = (updateCell w' x y) : iterateCells w' (x+1) y
+              | x == xs-1  = updateCell w' x y : iterateCells w' 0     (y+1)
+              | otherwise  = updateCell w' x y : iterateCells w' (x+1) y
           xs = fst (dim w)
           ys = snd (dim w)
 
@@ -51,25 +51,26 @@ stillL = World (4,4) [replicate 4 False,
                       [False,True,True,False],
                       replicate 4 False]
 
+-- TODO: add some comment about why cell with x and y is not needed to be
+-- excluded.
 updateCell :: World -> Int -> Int -> Bool
-updateCell w x y | ((cells w) !! y) !! x = survival
-                 | otherwise             = birth
-    where neighbours =
-              sum $ concatMap
-                (\ys' -> (map (\x' -> if (ys' !! x') then 1 else 0)
-                              [xmin..xmax]))
-                neighY
-          neighY   = map (cells w !!) [ymin..ymax]
-          survival = neighbours == 3 || neighbours == 4
-          birth    = neighbours == 3
-          xmin | x == 0    = 0
-               | otherwise = x-1
-          xmax | x == (fst (dim w))-1 = x
-               | otherwise            = x+1
-          ymin | y == 0    = 0
-               | otherwise = y-1
-          ymax | y == (snd (dim w))-1 = y
-               | otherwise           = y+1
+updateCell w x y | cells w !! y !! x = survival
+                 | otherwise         = birth
+    where nbrOfLivings = sum livingNeigh
+          livingNeigh  = concatMap getNeigh neighRows
+          getNeigh r   = map (neigh r) [xmin..xmax]
+          neigh r x'   = if r !! x' then 1 else 0
+          neighRows    = map (cells w !!) [ymin..ymax]
+          survival     = nbrOfLivings == 3 || nbrOfLivings == 4
+          birth        = nbrOfLivings == 3
+          xmin | x == 0             = 0
+               | otherwise          = x-1
+          xmax | x == fst (dim w)-1 = x
+               | otherwise          = x+1
+          ymin | y == 0             = 0
+               | otherwise          = y-1
+          ymax | y == snd (dim w)-1 = y
+               | otherwise          = y+1
 
 {-dumm :: [Int] -> int -> Int -> [Int]
 dumm l 0 _ = [head l]
