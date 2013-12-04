@@ -1,21 +1,29 @@
-module GOL where
+module GOLCol where
 
 import Test.QuickCheck
 import Data.Maybe
 import Data.List
+import Data.Char
 
-data World = World { dim :: Pair, cells :: [[Bool]] }
+
+data World = World { dim :: Pair, cells :: [[Int]] }
     deriving (Eq, Show)
 
 type Pair = (Int, Int)
 
-emptyWorld :: Pair -> World--[[Bool]]-- -> World
-emptyWorld d = World d (replicate (fst d) (replicate (snd d) False))
+emptyWorld :: Pair -> World
+emptyWorld d = World d (replicate (fst d) (replicate (snd d) 0))
 
-printWorld :: World -> IO ()
-printWorld w = mapM_ (putStrLn . cols) (cells w)
-    where cols = map (\c -> if c
+printPlainWorld :: World -> IO ()
+printPlainWorld w = mapM_ (putStrLn . cols) (cells w)
+    where cols = map (\c -> if c /= 0
                                then '#'
+                               else ' ')
+
+printAgingWorld :: World -> IO ()
+printAgingWorld w = mapM_ (print . cols) (cells w)
+    where cols = map (\c -> if c /= 0
+                               then chr (c + ord '0')
                                else ' ')
 
 
@@ -25,9 +33,9 @@ main = do
          runGame initW
 
 runGame :: World -> IO ()
-runGame w | w == nextW  = printWorld w
+runGame w | w == nextW  = printAgingWorld w
           | otherwise   = do
-                            printWorld w
+                            printAgingWorld w
                             runGame nextW
     where nextW = tick w
 
@@ -45,23 +53,27 @@ tick w = World (dim w) rows
           ys = snd (dim w)
 
 stillL :: World
-stillL = World (4,4) [replicate 4 False,
-                      [False,True,True,False],
-                      [False,True,True,False],
-                      replicate 4 False]
+stillL = World (4,4) [replicate 4 0,
+                      [0,1,1,0],
+                      [0,1,1,0],
+                      replicate 4 0]
 
 -- TODO: add some comment about why cell with x and y is not needed to be
 -- excluded.
-updateCell :: World -> Int -> Int -> Bool
-updateCell w x y | cells w !! y !! x = survival
-                 | otherwise         = birth
+updateCell :: World -> Int -> Int -> Int
+updateCell w x y | 0 /= cells w !! y !! x = survival
+                 | otherwise              = birth
     where nbrOfLivings = sum livingNeigh
           livingNeigh  = concatMap getNeigh neighRows
           getNeigh r   = map (neigh r) [xmin..xmax]
-          neigh r x'   = if r !! x' then 1 else 0
+          neigh r x'   = if (r !! x') /= 0 then 1 else 0
           neighRows    = map (cells w !!) [ymin..ymax]
-          survival     = nbrOfLivings == 3 || nbrOfLivings == 4
-          birth        = nbrOfLivings == 3
+          survival     = if nbrOfLivings == 3 || nbrOfLivings == 4
+                            then 1 + cells w !! y !! x
+                            else 0
+          birth        = if nbrOfLivings == 3
+                            then 1
+                            else 0
           xmin | x == 0             = 0
                | otherwise          = x-1
           xmax | x == fst (dim w)-1 = x
@@ -71,10 +83,4 @@ updateCell w x y | cells w !! y !! x = survival
           ymax | y == snd (dim w)-1 = y
                | otherwise          = y+1
 
-{-dumm :: [Int] -> int -> Int -> [Int]
-dumm l 0 _ = [head l]
-dumm l t n = []
-  where t = n
-dumm l a n = (l !! n) : (dumm l (a-1) n)
--}
 
