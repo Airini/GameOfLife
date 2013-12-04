@@ -24,7 +24,7 @@ nat = do ds <- oneOrMore digit
 
 offset :: Parser Pair
 --offset = parse (char '#' >-> char 'P' >-> char ' ')
-offset = specString "#P" >-> oneOrMore (sat isSpace) >->
+offset = specString "P" >-> oneOrMore (sat isSpace) >->
          nat >*> (\y -> oneOrMore (sat isSpace) >->
                         nat >*> \x -> success (x,y))
 
@@ -51,11 +51,45 @@ liveCell :: Parser Bool
 liveCell = char '*' >-> success True
 --liveCell = (char '*' +++ char '0') >-> success True
 
+plainRow :: Parser [Bool]
+plainRow = oneOrMore (deadCell +++ liveCell)
+
+paramRow :: Parser [Bool]
+paramRow = do
+             n <- nat
+             b <- (liveCell +++ deadCell)
+             return (replicate n b)
+
 row :: Parser [Bool]
-row = oneOrMore (deadCell +++ liveCell)
+row = do
+        f <- plainRow +++ paramRow
+        g <- row
+        return (f ++ g)
+      +++ return []
 
 ignore :: a -> Parser a
 ignore t = zeroOrMore (sat (\c -> True)) >-> return t
+
+infoLine :: Parser Pair
+infoLine = char '#' >-> (offset +++ ignore (0,0))
+
+description :: [String] -> (Maybe Pair, [String])
+description []     = (Nothing, [])
+description (l:ls) = let t = parse infoLine l
+                     in case t of 
+                             Just ((0,0), s) -> description ls
+                             Just (p, "")    -> (Just p, ls)
+                             Nothing         -> (Nothing, (l:ls))
+
+readLife :: FilePath -> IO World
+readLife f = do
+               file <- readFile f
+               let txt = lines file
+                   (x,y) = case parse offset (head txt) of
+                                Just (p,"") -> p
+                                _           -> (0,0)
+               print (x,y)
+               return $ emptyWorld (10,10)
 
 dimensions = do char '('
                 c <- specString "cells "       >-> nat
@@ -78,28 +112,6 @@ comment = char '!' >-> do
                          return t
                        +++ ignore (0,0,0,0)
 
-numbered :: Parser [Bool]
-numbered = do
-             n <- nat
-             b <- (liveCell +++ deadCell)
-             return (replicate n b)
-
-paramRow :: Parser [Bool]
-paramRow = do
-             f <- row +++ numbered
-             g <- paramRow
-             return (f ++ g)
-           +++ return []
-
-readLife :: FilePath -> IO World
-readLife f = do
-               file <- readFile f
-               let txt = lines file
-                   (x,y) = case parse offset (head txt) of
-                                Just (p,"") -> p
-                                _           -> (0,0)
-               print (x,y)
-               return $ emptyWorld (10,10)
 
 {- File structure
   * comments: start with "!"
