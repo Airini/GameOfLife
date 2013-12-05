@@ -15,7 +15,6 @@ class (Eq l) => LiveCell l where
   survive :: l -> l
   showText :: l -> Char
   getColour :: l -> (Float, Float, Float)
-  maxAge :: l
 
 instance LiveCell Bool where
   isAlive c = c
@@ -26,7 +25,6 @@ instance LiveCell Bool where
   showText c | isAlive c = '#'
              | otherwise = ' '
   getColour c = (1,1,0)
-  maxAge    = True
 
 
 instance LiveCell Int where
@@ -37,8 +35,8 @@ instance LiveCell Int where
   survive c = c + 1
   showText c | isAlive c = chr (c - ord '0')
 	     | otherwise = ' '
-  getColour c = (t,t,0.0)
-    where t | c < maxAge = 1.0 - (fromIntegral c) / (fromIntegral (maxAge::Int))
-            | otherwise  = 0.0
-  maxAge = 100
-
+  getColour c = (t,t,0)
+    where
+      t | c < maxAge = 1 - (fromIntegral c) / (fromIntegral maxAge)
+        | otherwise  = 0
+      maxAge = 100
