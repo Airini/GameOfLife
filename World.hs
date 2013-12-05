@@ -3,10 +3,11 @@ module World where
 import Data.Char
 
 data World a = World { dim :: Pair, cells :: [[a]] }
+    deriving (Eq)
 
 type Pair = (Int, Int)
 
-class LiveCell l where
+class (Eq l) => LiveCell l where
   isAlive :: l -> Bool
   isDead :: l -> Bool
   die :: l -> l

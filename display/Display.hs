@@ -18,7 +18,7 @@ display zoom angle pos = do
     z' <- get zoom
     scale z' z' z'
     forM_ (points $ w) $ \(x,y,z) -> preservingMatrix $ do
-      color $ Color3      r         b         (b::GLfloat)
+      color $ Color3      r         g         (b::GLfloat)
       translate $ Vector3 (-dimX/2) (-dimY/2) (0::GLfloat)
       translate $ Vector3 x         y         (0::GLfloat)
       cube 0.4
