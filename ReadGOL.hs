@@ -24,7 +24,7 @@ nat = do ds <- oneOrMore digit
 
 offset :: Parser Pair
 --offset = parse (char '#' >-> char 'P' >-> char ' ')
-offset = specString "P" >-> oneOrMore (sat isSpace) >->
+offset = specString "#P" >-> oneOrMore (sat isSpace) >->
          nat >*> (\y -> oneOrMore (sat isSpace) >->
                         nat >*> \x -> success (x,y))
 
@@ -57,7 +57,7 @@ plainRow = oneOrMore (deadCell +++ liveCell)
 paramRow :: Parser [Bool]
 paramRow = do
              n <- nat
-             b <- (liveCell +++ deadCell)
+             b <- liveCell +++ deadCell
              return (replicate n b)
 
 row :: Parser [Bool]
@@ -68,7 +68,7 @@ row = do
       +++ return []
 
 ignore :: a -> Parser a
-ignore t = zeroOrMore (sat (\c -> True)) >-> return t
+ignore t = zeroOrMore (sat (const True)) >-> return t
 
 infoLine :: Parser Pair
 infoLine = char '#' >-> (offset +++ ignore (0,0))
@@ -79,7 +79,17 @@ description (l:ls) = let t = parse infoLine l
                      in case t of 
                              Just ((0,0), s) -> description ls
                              Just (p, "")    -> (Just p, ls)
-                             Nothing         -> (Nothing, (l:ls))
+                             Nothing         -> (Nothing, l:ls)
+
+data inputBlock = B { topLeft :: Pair, rows :: [[Bool]] }
+  deriving (Eq, Show)
+
+block :: [[String]] -> Maybe inputBlock
+block [] = Nothing
+block (l:ls) = case parse offset l of
+                    Just (p, "") -> Just B p     (
+                    _            -> 
+
 
 readLife :: FilePath -> IO World
 readLife f = do
@@ -108,8 +118,7 @@ comment = char '!' >-> do
                          char ' '
                          patternName
                          char ' '
-                         t <- dimensions
-                         return t
+                         dimensions
                        +++ ignore (0,0,0,0)
 
 
