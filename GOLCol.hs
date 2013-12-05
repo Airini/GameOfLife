@@ -7,7 +7,7 @@ import Data.Char
 
 
 data World = World { dim :: Pair, cells :: [[Int]] }
-    deriving (Eq, Show)
+    deriving Eq
 
 type Pair = (Int, Int)
 
@@ -20,12 +20,14 @@ printPlainWorld w = mapM_ (putStrLn . cols) (cells w)
                                then '#'
                                else ' ')
 
-printAgingWorld :: World -> IO ()
-printAgingWorld w = mapM_ (print . cols) (cells w)
+showAgingWorld :: World -> String
+showAgingWorld w = unlines $ map cols (cells w)
     where cols = map (\c -> if c /= 0
                                then chr (c + ord '0')
                                else ' ')
 
+instance Show World where
+  show = showAgingWorld
 
 main :: IO ()
 main = do
@@ -33,9 +35,9 @@ main = do
          runGame initW
 
 runGame :: World -> IO ()
-runGame w | w == nextW  = printAgingWorld w
+runGame w | w == nextW  = print w
           | otherwise   = do
-                            printAgingWorld w
+                            print w
                             runGame nextW
     where nextW = tick w
 
