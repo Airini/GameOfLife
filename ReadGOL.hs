@@ -21,7 +21,6 @@ nat :: Parser Int
 nat = do ds <- oneOrMore digit
          return (read ds)
 
-
 offset :: Parser Pair
 --offset = parse (char '#' >-> char 'P' >-> char ' ')
 offset = specString "#P" >-> oneOrMore (sat isSpace) >->

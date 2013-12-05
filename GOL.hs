@@ -71,10 +71,4 @@ updateCell w x y | cells w !! y !! x = survival
           ymax | y == snd (dim w)-1 = y
                | otherwise          = y+1
 
-{-dumm :: [Int] -> int -> Int -> [Int]
-dumm l 0 _ = [head l]
-dumm l t n = []
-  where t = n
-dumm l a n = (l !! n) : (dumm l (a-1) n)
--}
 
