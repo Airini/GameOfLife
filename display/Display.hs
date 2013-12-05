@@ -18,7 +18,7 @@ display zoom angle pos = do
     z' <- get zoom
     scale z' z' z'
     forM_ (points $ w) $ \(x,y,z) -> preservingMatrix $ do
-      color $ Color3      1         1         (0::GLfloat)
+      color $ Color3      r         b         (b::GLfloat)
       translate $ Vector3 (-dimX/2) (-dimY/2) (0::GLfloat)
       translate $ Vector3 x         y         (0::GLfloat)
       cube 0.4
@@ -29,6 +29,9 @@ display zoom angle pos = do
         dimY = snd' $ dim w
         fst' = fromIntegral . fst
         snd' = fromIntegral . snd
+        r = (\(x,_,_) -> x) getColour
+        g = (\(_,x,_) -> x) getColour
+        b = (\(_,_,x) -> x) getColour
 
 idle :: IORef GLfloat -> IORef GLfloat -> IdleCallback
 idle angle delta = do
