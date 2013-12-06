@@ -3,7 +3,7 @@ module World where
 import Data.Char
 
 data World a = World { dim :: Pair, cells :: [[a]] }
-    deriving (Eq)
+    deriving (Eq, Show)
 
 type Pair = (Int, Int)
 

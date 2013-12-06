@@ -102,12 +102,29 @@ inputR f = do
                   Just(p,s)  -> print p
                   _          -> print "ERROR"
 
+readLife :: FilePath -> IO (World Bool)
+readLife f = do
+    file <- readFile f
+    case parse ((infoLine >-| offset) >-> inputBlock) file of
+         Just(p,s) -> case p of
+                           B (x,y) (r:rs) -> return $ World (length r -x, length (r:rs))
+                                                            (worldify (r:rs)
+                                                              (length r - x)
+                                                              (length (r:rs)))
+                           _              -> error "readLife : wrong format or "
+                                                   "unsupported format"
+         _         -> error "readLife : wrong format or unsupported format"
+    where worldify []     xs ys = replicate ys (replicate xs False)
+          worldify (r:rs) xs ys = (r ++ replicate (xs - length r) False) :
+                                  worldify rs xs ys
+
+
 data MapBlock = B { topLeft :: Pair, rows :: [[Bool]] }
   deriving (Eq, Show)
 
 inputBlock :: Parser MapBlock
 inputBlock = do p <- offset
-                m <- oneOrMore plainRow
+                m <- oneOrMore (plainRow <-< char '\n')
                 return (B p m)
 
 {-
@@ -128,6 +145,7 @@ block (l:ls) = case parse offset l of
                print (x,y)
                return $ emptyWorld (10,10)
 -}
+
 dimensions = do char '('
                 c <- specString "cells "       >-> nat
                 l <- specString " length "     >-> nat
