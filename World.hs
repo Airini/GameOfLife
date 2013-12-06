@@ -3,10 +3,11 @@ module World where
 import Data.Char
 
 data World a = World { dim :: Pair, cells :: [[a]] }
+    deriving (Eq)
 
 type Pair = (Int, Int)
 
-class LiveCell l where
+class (Eq l) => LiveCell l where
   isAlive :: l -> Bool
   isDead :: l -> Bool
   die :: l -> l
@@ -14,7 +15,6 @@ class LiveCell l where
   survive :: l -> l
   showText :: l -> Char
   getColour :: l -> (Float, Float, Float)
-  maxAge :: l
 
 instance LiveCell Bool where
   isAlive c = c
@@ -25,7 +25,6 @@ instance LiveCell Bool where
   showText c | isAlive c = '#'
              | otherwise = ' '
   getColour c = (1,1,0)
-  maxAge    = True
 
 
 instance LiveCell Int where
@@ -36,8 +35,22 @@ instance LiveCell Int where
   survive c = c + 1
   showText c | isAlive c = chr (c - ord '0')
 	     | otherwise = ' '
-  getColour c = (t,t,0.0)
-    where t | c < maxAge = 1.0 - (fromIntegral c) / (fromIntegral (maxAge::Int))
-            | otherwise  = 0.0
-  maxAge = 100
+  getColour c = (t,t,0)
+    where
+      t | c < maxAge = 1 - (fromIntegral c) / (fromIntegral maxAge)
+        | otherwise  = 0
+      maxAge = 100
 
+fullWorld :: Pair -> World Bool
+fullWorld d = World d (replicate (fst d) (replicate (snd d) True))
+
+emptyWorld :: Pair -> World Bool
+emptyWorld d = World d (replicate (fst d) (replicate (snd d) False))
+
+stillL :: World Bool
+stillL = World (4,4) [replicate 4 False,
+                      [False,True,True,False],
+                      [False,True,True,False],
+                      replicate 4 False]
+
+blinker = World (3,3) [ [False,True,False] | x <- ["I will","go to","sleep now."] ]
