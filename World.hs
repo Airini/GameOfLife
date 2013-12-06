@@ -40,3 +40,17 @@ instance LiveCell Int where
       t | c < maxAge = 1 - (fromIntegral c) / (fromIntegral maxAge)
         | otherwise  = 0
       maxAge = 100
+
+fullWorld :: Pair -> World Bool
+fullWorld d = World d (replicate (fst d) (replicate (snd d) True))
+
+emptyWorld :: Pair -> World Bool
+emptyWorld d = World d (replicate (fst d) (replicate (snd d) False))
+
+stillL :: World Bool
+stillL = World (4,4) [replicate 4 False,
+                      [False,True,True,False],
+                      [False,True,True,False],
+                      replicate 4 False]
+
+blinker = World (3,3) [ [False,True,False] | x <- ["I will","go to","sleep now."] ]
