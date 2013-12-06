@@ -16,17 +16,16 @@ runGame :: (LiveCell a) => World a -> IO ()
 runGame w = do
   (_progName, _args) <- getArgsAndInitialize
   initialDisplayMode $= [WithDepthBuffer, DoubleBuffered]
-  _window <- createWindow "Hello World"
+  _window <- createWindow "Game of Life"
   reshapeCallback $= Just reshape
   world <- newIORef w
-  angle <- newIORef 0
   zoom <- newIORef 0.5
   delta <- newIORef 0.1
   pos <- newIORef (0, 0)
   addTimerCallback timerMs (redisplay)
   keyboardMouseCallback $= Just (keyboardMouse zoom delta pos)
-  idleCallback $= Just (idle world angle delta)
-  displayCallback $= display world zoom angle pos
+  idleCallback $= Just (idle world delta)
+  displayCallback $= display world zoom pos
   mainLoop
 {-runGame w | w == nextW  = printWorld w-}
           {-| otherwise   = do-}

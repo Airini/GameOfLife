@@ -8,8 +8,8 @@ import Points
 import World
 import GOL
 
-display :: LiveCell a => IORef (World a) -> IORef GLfloat -> IORef GLfloat -> IORef (GLfloat, GLfloat) -> DisplayCallback
-display world zoom angle pos = do
+display :: LiveCell a => IORef (World a) -> IORef GLfloat -> IORef (GLfloat, GLfloat) -> DisplayCallback
+display world zoom pos = do
   clear [ColorBuffer, DepthBuffer]
   clear [ColorBuffer]
   loadIdentity
@@ -34,10 +34,9 @@ display world zoom angle pos = do
         b = (\(_,_,x) -> float2GLfloat x) . getColour
         float2GLfloat x = (realToFrac x) ::GLfloat
 
-idle :: LiveCell a => IORef (World a) -> IORef GLfloat -> IORef GLfloat -> IdleCallback
-idle w angle delta = do
+idle :: LiveCell a => IORef (World a) -> IORef GLfloat -> IdleCallback
+idle w delta = do
   d <- get delta
-  angle $~! (+ d)
   w $~! tick
   postRedisplay Nothing
 
