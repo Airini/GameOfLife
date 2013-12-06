@@ -9,7 +9,7 @@ import Display
 
 main :: IO ()
 main = do
-         let initW = blinker
+         let initW = blinkerAging
          runGame initW
 
 runGame :: (LiveCell a) => World a -> IO ()
@@ -31,4 +31,4 @@ redisplay w = do
     w $~! tick
     addTimerCallback timerMs (redisplay w)
 
-timerMs = 500
+timerMs = 250

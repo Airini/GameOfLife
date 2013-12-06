@@ -28,8 +28,8 @@ instance LiveCell Bool where
 
 
 instance LiveCell Int where
-  isAlive c = c /= 0
-  isDead c  = c == 0
+  isAlive c = c /= 0 && c <= maxAge
+  isDead c  = c == 0 || c > maxAge
   die c     = 0
   born c    = 1
   survive c = c + 1
@@ -39,7 +39,7 @@ instance LiveCell Int where
     where
       t | c < maxAge = 1 - (fromIntegral c / fromIntegral maxAge)
         | otherwise  = 0
-      maxAge = 100
+maxAge = 100
 
 fullWorld :: Pair -> World Bool
 fullWorld d = World d (replicate (fst d) (replicate (snd d) True))
@@ -54,3 +54,5 @@ stillL = World (4,4) [replicate 4 False,
                       replicate 4 False]
 
 blinker = World (3,3) [ [False,True,False] | x <- ["I will","go to","sleep now."] ]
+
+blinkerAging = World (3,3) [ ([0,90,0] ::[Int])| x <- ["Aging","works","now!"] ]
