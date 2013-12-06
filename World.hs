@@ -37,7 +37,7 @@ instance LiveCell Int where
 	     | otherwise = ' '
   getColour c = (t,t,0)
     where
-      t | c < maxAge = 1 - (fromIntegral c) / (fromIntegral maxAge)
+      t | c < maxAge = 1 - (fromIntegral c / fromIntegral maxAge)
         | otherwise  = 0
       maxAge = 100
 

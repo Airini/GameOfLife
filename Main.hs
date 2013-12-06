@@ -25,11 +25,6 @@ runGame w = do
   keyboardMouseCallback $= Just (keyboardMouse zoom pos)
   displayCallback $= display world zoom pos
   mainLoop
-{-runGame w | w == nextW  = printWorld w-}
-          {-| otherwise   = do-}
-                            {-printWorld w-}
-                            {-runGame nextW-}
-    where nextW = tick w
 
 redisplay :: LiveCell a => IORef (World a) -> TimerCallback
 redisplay w = do

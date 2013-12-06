@@ -19,7 +19,7 @@ display world zoom pos = do
   preservingMatrix $ do
     z' <- get zoom
     scale z' z' z'
-    forM_ (points $ w) $ \(x,y,c) -> preservingMatrix $ do
+    forM_ (points w) $ \(x,y,c) -> preservingMatrix $ do
       color $ Color3      (r c)     (g c)     (b c)
       translate $ Vector3 ((-dimX w)/2) ((-dimY w)/2) (0::GLfloat)
       translate $ Vector3 x         y         (0::GLfloat)
@@ -33,4 +33,4 @@ display world zoom pos = do
         r = (\(x,_,_) -> float2GLfloat x) . getColour
         g = (\(_,x,_) -> float2GLfloat x) . getColour
         b = (\(_,_,x) -> float2GLfloat x) . getColour
-        float2GLfloat x = (realToFrac x) ::GLfloat
+        float2GLfloat x = realToFrac x ::GLfloat
