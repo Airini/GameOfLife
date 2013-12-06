@@ -1,4 +1,4 @@
-module Display (idle, display) where
+module Display ( display) where
 
 import Graphics.UI.GLUT
 import Control.Monad
@@ -25,6 +25,7 @@ display world zoom pos = do
       translate $ Vector3 x         y         (0::GLfloat)
       cube 0.4
   swapBuffers
+  postRedisplay Nothing
   where dimX = fst' . dim
         dimY = snd' . dim
         fst' = fromIntegral . fst
@@ -33,10 +34,3 @@ display world zoom pos = do
         g = (\(_,x,_) -> float2GLfloat x) . getColour
         b = (\(_,_,x) -> float2GLfloat x) . getColour
         float2GLfloat x = (realToFrac x) ::GLfloat
-
-idle :: LiveCell a => IORef (World a) -> IORef GLfloat -> IdleCallback
-idle w delta = do
-  d <- get delta
-  w $~! tick
-  postRedisplay Nothing
-

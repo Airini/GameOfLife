@@ -19,12 +19,10 @@ runGame w = do
   _window <- createWindow "Game of Life"
   reshapeCallback $= Just reshape
   world <- newIORef w
-  zoom <- newIORef 0.5
-  delta <- newIORef 0.1
+  zoom <- newIORef 0.25
   pos <- newIORef (0, 0)
-  addTimerCallback timerMs (redisplay)
-  keyboardMouseCallback $= Just (keyboardMouse zoom delta pos)
-  idleCallback $= Just (idle world delta)
+  addTimerCallback timerMs (redisplay world)
+  keyboardMouseCallback $= Just (keyboardMouse zoom pos)
   displayCallback $= display world zoom pos
   mainLoop
 {-runGame w | w == nextW  = printWorld w-}
@@ -33,8 +31,9 @@ runGame w = do
                             {-runGame nextW-}
     where nextW = tick w
 
-redisplay :: TimerCallback
-redisplay = do
-    addTimerCallback timerMs (redisplay)
+redisplay :: LiveCell a => IORef (World a) -> TimerCallback
+redisplay w = do
+    w $~! tick
+    addTimerCallback timerMs (redisplay w)
 
 timerMs = 500
