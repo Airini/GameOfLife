@@ -3,7 +3,8 @@ module Parsing
   ,parse,
   success,failure,sat,pmap,item,char,digit,
   (+++),(<:>),(>*>),(>->),(<-<),
-  oneOrMore,zeroOrMore,chain ) 
+  oneOrMore,zeroOrMore,chain,
+  peak )
 {----------------------
 Week 5A part I
 
@@ -102,6 +103,12 @@ chain p q = p <:> zeroOrMore (q >-> p)
 diglist = chain digit (char ',') 
 
 
+peak :: Parser a -> Parser a
+peak p = P $ \s ->
+         case parse p s of
+              Just(o,s')  -> Just(o,s)
+              _           -> Nothing
+ 
 
 
 

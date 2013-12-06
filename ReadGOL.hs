@@ -1,9 +1,25 @@
 module ReadGOL where
 
-import GOL
+import World
 import Parsing
 import Data.Char
 import Data.Maybe
+
+-----------------------------------------------------------------------------
+{- Adapted from ReadExprMonadic -}
+-- Natural number parser
+nat :: Parser Int
+nat = do ds <- oneOrMore digit
+         return (read ds)
+
+-- Integer parser
+integer :: Parser Int 
+integer = nat +++ neg -- natural or negative
+  where neg = do char '-'
+                 n <- nat
+                 return $ negate n
+-----------------------------------------------------------------------------
+
 
 --specString :: String -> Parser Char
 --specString s | length s == 1 = char (head s)
@@ -16,22 +32,17 @@ specString s | length s == 1  = pmap (:[]) (char (head s))
 
 --aux = pmap (\c -> [c]) (specString "#P")
 
--- From ReadExprMonadic
-nat :: Parser Int
-nat = do ds <- oneOrMore digit
-         return (read ds)
-
 offset :: Parser Pair
 --offset = parse (char '#' >-> char 'P' >-> char ' ')
 offset = specString "#P" >-> oneOrMore (sat isSpace) >->
-         nat >*> (\y -> oneOrMore (sat isSpace) >->
-                        nat >*> \x -> success (x,y))
+         (nat >*> (\y -> oneOrMore (sat isSpace) >->
+                        nat >*> \x -> success (x,y))) <-< char '\n'
 
 offset' :: Parser Pair
 offset' = specString "#P" >-> oneOrMore (sat isSpace) >->
           do
             y <- nat
-            x <- oneOrMore (sat isSpace) >-> nat
+            x <- oneOrMore (sat isSpace) >-> nat <-< char '\n'
             return (x,y)
 
 offset'' :: Parser Pair
@@ -41,6 +52,7 @@ offset'' = do
              y <- nat
              oneOrMore (sat isSpace)
              x <- nat
+             char '\n'
              return (x,y)
 
 deadCell :: Parser Bool
@@ -67,31 +79,47 @@ row = do
       +++ return []
 
 ignore :: a -> Parser a
-ignore t = zeroOrMore (sat (const True)) >-> return t
+ignore t = zeroOrMore (sat (/= '\n')) >-> char '\n' >-> return t
 
-infoLine :: Parser Pair
-infoLine = char '#' >-> (offset +++ ignore (0,0))
+infoLine :: Parser ()
+infoLine = char '#' >-> ignore ()
 
-description :: [String] -> (Maybe Pair, [String])
+(>-|) :: Parser a -> Parser b -> Parser [a]
+p >-| q = (peak q >-> return []) +++ (p <:> (p >-| q))
+
+{-
+description :: String -> (Maybe Pair, [String])
 description []     = (Nothing, [])
 description (l:ls) = let t = parse infoLine l
                      in case t of 
                              Just ((0,0), s) -> description ls
                              Just (p, "")    -> (Just p, ls)
                              Nothing         -> (Nothing, l:ls)
+-}
+inputR f = do
+             file <- readFile f
+             case parse ((infoLine >-| offset) >-> oneOrMore inputBlock) file of
+                  Just(p,s)  -> print p
+                  _          -> print "ERROR"
 
-data inputBlock = B { topLeft :: Pair, rows :: [[Bool]] }
+data MapBlock = B { topLeft :: Pair, rows :: [[Bool]] }
   deriving (Eq, Show)
 
+inputBlock :: Parser MapBlock
+inputBlock = do p <- offset
+                m <- oneOrMore plainRow
+                return (B p m)
+
+{-
 block :: [[String]] -> Maybe inputBlock
 block [] = Nothing
 block (l:ls) = case parse offset l of
                     Just (p, "") -> Just B p     (
                     _            -> 
+-}
 
-
-readLife :: FilePath -> IO World
-readLife f = do
+--readLife :: LiveCell c => FilePath -> IO (World c)
+{-readLife f = do
                file <- readFile f
                let txt = lines file
                    (x,y) = case parse offset (head txt) of
@@ -99,7 +127,7 @@ readLife f = do
                                 _           -> (0,0)
                print (x,y)
                return $ emptyWorld (10,10)
-
+-}
 dimensions = do char '('
                 c <- specString "cells "       >-> nat
                 l <- specString " length "     >-> nat

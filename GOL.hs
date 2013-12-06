@@ -22,8 +22,8 @@ tick w = World (dim w) rows
 -- excluded.
 updateCell :: LiveCell a => World a -> Int -> Int -> a
 updateCell w x y | isAlive c && survival = survive c
-                 | birth = born c
-                 | otherwise = die c
+                 | birth                 = born c
+                 | otherwise             = die c
     where c = cells w !! y !! x
           nbrOfLivings = sum livingNeigh
           livingNeigh  = concatMap getNeigh neighRows
