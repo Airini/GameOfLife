@@ -21,39 +21,33 @@ integer = nat +++ neg -- natural or negative
 -----------------------------------------------------------------------------
 
 
---specString :: String -> Parser Char
---specString s | length s == 1 = char (head s)
---             | otherwise     = char (head s) >-> specString (tail s)
-
 specString :: String -> Parser String
-specString [] = error "specString: empty string"
-specString s | length s == 1  = pmap (:[]) (char (head s))
-             | otherwise      = char (head s) <:> specString (tail s)
-
---aux = pmap (\c -> [c]) (specString "#P")
+specString []     = failure
+specString [c]    = pmap (:[]) (char c)
+specString (c:cs) = char c <:> specString cs
 
 offset :: Parser Pair
---offset = parse (char '#' >-> char 'P' >-> char ' ')
 offset = specString "#P" >-> oneOrMore (sat isSpace) >->
-         (nat >*> (\y -> oneOrMore (sat isSpace) >->
-                        nat >*> \x -> success (x,y))) <-< char '\n'
+         (integer >*> (\y -> oneOrMore (sat isSpace) >->
+                             integer >*> \x -> success (x,y))) <-< char '\n'
 
 offset' :: Parser Pair
 offset' = specString "#P" >-> oneOrMore (sat isSpace) >->
           do
-            y <- nat
-            x <- oneOrMore (sat isSpace) >-> nat <-< char '\n'
+            y <- integer
+            x <- oneOrMore (sat isSpace) >-> integer <-< char '\n'
             return (x,y)
 
 offset'' :: Parser Pair
 offset'' = do
              specString "#P"
              oneOrMore (sat isSpace)
-             y <- nat
+             y <- integer
              oneOrMore (sat isSpace)
-             x <- nat
+             x <- integer
              char '\n'
              return (x,y)
+
 
 deadCell :: Parser Bool
 deadCell = char '.' >-> success False
