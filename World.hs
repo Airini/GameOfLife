@@ -2,11 +2,6 @@ module World where
 
 import Data.Char
 
-data World a = World { dim :: Pair, cells :: [[a]] }
-    deriving Eq
-
-type Pair = (Int, Int)
-
 class (Eq l) => LiveCell l where
   isAlive :: l -> Bool
   isDead :: l -> Bool
@@ -17,6 +12,20 @@ class (Eq l) => LiveCell l where
   getColour :: l -> (Float, Float, Float)
   deadC :: l
   newlC :: l
+
+data World a = World { dim :: Pair, cells :: [[a]] }
+    deriving Eq
+
+-- Requires -XDatatypeContexts which is deprecated :S
+--data LiveCell a => World a = World { dim :: Pair, cells :: [[a]] }
+--    deriving Eq
+
+--data World a where
+    --World :: LiveCell a => a -> World a
+--    World :: LiveCell a => { dim :: Pair, cells :: [[a]] } -> World a
+--    deriving Eq
+
+type Pair = (Int, Int)
 
 instance LiveCell a => Show (World a) where
   show = showWorld
