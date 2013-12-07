@@ -60,7 +60,6 @@ deadCell = char '.' >-> success False
 
 liveCell :: Parser Bool
 liveCell = char '*' >-> success True
---liveCell = (char '*' +++ char '0') >-> success True
 
 plainRow :: Parser [Bool]
 plainRow = oneOrMore (deadCell +++ liveCell)
@@ -87,15 +86,6 @@ infoLine = char '#' >-> ignore ()
 (>-|) :: Parser a -> Parser b -> Parser [a]
 p >-| q = (peak q >-> return []) +++ (p <:> (p >-| q))
 
-{-
-description :: String -> (Maybe Pair, [String])
-description []     = (Nothing, [])
-description (l:ls) = let t = parse infoLine l
-                     in case t of 
-                             Just ((0,0), s) -> description ls
-                             Just (p, "")    -> (Just p, ls)
-                             Nothing         -> (Nothing, l:ls)
--}
 inputR f = do
              file <- readFile f
              case parse ((infoLine >-| offset) >-> oneOrMore inputBlock) file of
@@ -114,9 +104,12 @@ readLife f = do
                            _              -> error "readLife : wrong format or "
                                                    "unsupported format"
          _         -> error "readLife : wrong format or unsupported format"
-    where worldify []     xs ys = replicate ys (replicate xs False)
-          worldify (r:rs) xs ys = (r ++ replicate (xs - length r) False) :
-                                  worldify rs xs ys
+
+
+worldify :: [[Bool]] -> Int -> Int -> [[Bool]]
+worldify []     xs ys = replicate ys (replicate xs False)
+worldify (r:rs) xs ys = (r ++ replicate (xs - length r) False) : worldify rs xs ys
+
 
 
 data MapBlock = B { topLeft :: Pair, rows :: [[Bool]] }
@@ -127,25 +120,7 @@ inputBlock = do p <- offset
                 m <- oneOrMore (plainRow <-< char '\n')
                 return (B p m)
 
-{-
-block :: [[String]] -> Maybe inputBlock
-block [] = Nothing
-block (l:ls) = case parse offset l of
-                    Just (p, "") -> Just B p     (
-                    _            -> 
--}
-
---readLife :: LiveCell c => FilePath -> IO (World c)
-{-readLife f = do
-               file <- readFile f
-               let txt = lines file
-                   (x,y) = case parse offset (head txt) of
-                                Just (p,"") -> p
-                                _           -> (0,0)
-               print (x,y)
-               return $ emptyWorld (10,10)
--}
-
+-----------------------------------------------------------------------------
 dimensions = do char '('
                 c <- specString "cells "       >-> nat
                 l <- specString " length "     >-> nat
