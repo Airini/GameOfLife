@@ -3,10 +3,39 @@ module ReadGOL where
 import World
 import Parsing
 import Data.Char
-import Data.Maybe
 
 -----------------------------------------------------------------------------
-{- Adapted from ReadExprMonadic -}
+{-= From our module _Sudoku_ (lab 3) =-}
+
+-- Updates a given position in a list to a new value
+(!!=) :: [a] -> (Int,a) -> [a]
+(!!=) xs (i,e) = f e xs i 0
+    where
+        f _ [] _ _ = []
+        f e' (x':xs') n m | n == m = e' : xs'
+                          | otherwise = x' : f e' xs' n (m+1)
+
+
+-----------------------------------------------------------------------------
+{-= Generic non-parse functions =-}
+
+-- A 2-tuple of functions acting on a pair of elements, element-wise
+funcTuple :: (a -> b, c -> d) -> (a, c) -> (b, d)
+funcTuple (f, g) (x,y) = (f x, g y)
+
+-- Maps a function on each element of a pair
+mapTuple :: (a -> b) -> (a, a) -> (b, b)
+mapTuple h (x, y) = (h x, h y)
+
+-- Minimum and maximum of first components and second components respectively
+-- of pairs produced by a function applied to each item in a list
+min_max :: (Ord a, Ord b) => (c -> (a, b)) -> [c] -> (a, b)
+min_max f bs = funcTuple (minimum, maximum) (unzip (map f bs))
+
+
+-----------------------------------------------------------------------------
+{-= Adapted from _ReadExprMonadic_ =-}
+
 -- Natural number parser
 nat :: Parser Int
 nat = do ds <- oneOrMore digit
@@ -18,8 +47,10 @@ integer = nat +++ neg -- natural or negative
   where neg = do char '-'
                  n <- nat
                  return $ negate n
------------------------------------------------------------------------------
 
+
+-----------------------------------------------------------------------------
+{-= Generic parsers =-}
 
 -- Parses using a first parser until an occurrence parsable by a seond
 -- parser is encountered, ie: it is equivalent to "parse a until b is parsed"
@@ -36,8 +67,15 @@ specString (c:cs) = char c <:> specString cs
 
 -- Parser which ignores a line returning a default argument value
 ignore :: a -> Parser a
-ignore t = zeroOrMore (sat (/= '\n')) >-> char '\n' >-> return t
+ignore t = sat (const True) >-| char '\n' >-> char '\n' >-> return t
 
+
+-----------------------------------------------------------------------------
+{-= GOL-file specific parsers (format: Life 1.05 with some variations) =-}
+
+-- Parses a line of comments or other non-considered information
+infoLine :: Parser ()
+infoLine = char '#' >-> ignore ()
 
 -- Parses an offset (in the world map) pair with respect to the origin (0,0)
 offset :: Parser Pair
@@ -61,7 +99,6 @@ offset'' = do
              y <- integer
              char '\n'
              return (x,y)
-
 
 -- Parses a dead cell
 deadCell :: Parser Bool
@@ -91,9 +128,8 @@ row = do
       +++ return []
 
 
--- Parses a line of comments or other non-considered information
-infoLine :: Parser ()
-infoLine = char '#' >-> ignore ()
+-----------------------------------------------------------------------------
+{-= Type and parser for text input life map blocks (~ Life 1.05 format) =-}
 
 -- Data type representing a GOL input specification block
 data MapBlock = B { topLeft :: Pair, rows :: [[Bool]] }
@@ -108,104 +144,75 @@ inputBlock = do
         sqr  = map (\r -> r ++ replicate (cols - length r) False) m
     return (B p sqr)
 
-funcTuple :: (a -> b, c -> d) -> (a, c) -> (b, d)
-funcTuple (f, g) (x,y) = (f x, g y)
 
-mapTuple :: (a -> b) -> (a, a) -> (b, b)
-mapTuple h (x, y) = (h x, h y)
+-----------------------------------------------------------------------------
+{-= Conversion functions from a set of map blocks to a world map =-}
 
--- Updates a given position in a list to a new value
-(!!=) :: [a] -> (Int,a) -> [a]
-(!!=) xs (i,e) = f e xs i 0
-    where
-        f _ [] _ _ = []
-        f e' (x':xs') n m | n == m = e' : xs'
-                          | otherwise = x' : f e' xs' n (m+1)
+-- Generates a World map from a list of map blocks; the second parameter is
+-- a scale factor for the world's size with respect to the blocks' span
+worldify :: [MapBlock] -> Int -> World Bool
+worldify ms k = buildW (getSpan ms) k ms
 
+-- Yields the span (across each axis) of all defined cells in a list of map
+-- blocks. The return is two _Pair_s: first for x-axis, second for y-axis
+-- (in a Cartesian coordinate system). Each pair consists of:
+--   (lower limit, upper limit) on the corresponding axis
 getSpan :: [MapBlock] -> (Pair, Pair)
 getSpan bs = (min_max xIn bs, min_max yIn bs)
     where xIn b = (fst (topLeft b), fst (topLeft b) + length (head (rows b)))
           yIn b = (snd (topLeft b), snd (topLeft b) + length (rows b))
 
-min_max :: (Ord a, Ord b) => (c -> (a, b)) -> [c] -> (a, b)
-min_max f bs = funcTuple (minimum, maximum) (unzip (map f bs))
-
+-- Builds a world from a set of map blocks, given a scaling factor and the
+-- range in which specified cells exist across each dimension
 buildW :: (Pair, Pair) -> Int -> [MapBlock] -> World Bool
 buildW xsys k bs = foldl placeBlock base bs
     where dims = mapTuple (*2) (buildDims k xsys)
           base = emptyWorld dims
-          mountBlocks = foldl placeBlock base bs
 
+-- Places a map block in a given world
 placeBlock :: World Bool -> MapBlock -> World Bool
-placeBlock (World d cs) (B p m) = World d (snd ret)
-    where (x,y) = funcTuple (mapTuple ((+) . (`div` 2)) d) p   -- equivalent to d/2 + p
-          ret = foldl (\(n, w) r -> (n+1, w !!= (n, snd (chunkIn (w !! n) r)))) (y, cs) m
-          chunkIn b = foldl (\(i, us) v -> (i+1, us !!= (i, v))) (x, b)
+placeBlock (World d cs) (B p m) = World d (snd blockIn)
+    where (x,y) = funcTuple (mapTuple ((+) . (`div` 2)) d) p
+                  -- equivalent to d/2 + p
+          blockIn = foldl (\(n, w) r ->
+                            (n+1, w !!= (n, snd (rowChunkIn (w !! n) r))))
+                          (y, cs)
+                          m
+          rowChunkIn b = foldl (\(i, us) v -> (i+1, us !!= (i, v))) (x, b)
 
+-- Given a scale factor and ranges for each dimension, calculates the
+-- dimension of the whole world (considering (0,0) as the centre point)
 buildDims :: Int -> (Pair, Pair) -> Pair
 buildDims k (αp, ßp) = mapTuple (*k) (maxExt αp, maxExt ßp)
     where maxExt (α, ß) = max (abs α) (abs ß)
 
 
--- xs: fst dim
--- ys: snd dim
---wordy bs = World (xs,ys) rows
-worldify :: [MapBlock] -> Int -> World Bool
-worldify ms k = buildW (getSpan ms) k ms
+-----------------------------------------------------------------------------
+{-= World map file reading =-}
 
--- Reads a world map from a specified file
+-- Reads a world map from a specified file and creates a World with booleans
+-- as cells and given a scale factor to determine the size of the whole world
+-- with respect to the area specified in the file.
+-- * True cells  => alive
+-- * False cells => dead
 readLife :: FilePath -> Int -> IO (World Bool)
 readLife f k = do
     file <- readFile f
-    case parse ((infoLine >-| offset) >-> oneOrMore inputBlock <-< zeroOrMore (sat isSpace)) file of
+    case parse ((infoLine >-| offset) >->
+                 oneOrMore inputBlock <-< zeroOrMore (sat isSpace)) file of
          Just(p,"") -> return $ worldify p k
          _          -> error "readLife: ill-formed input life file"
 
 ---- function for testing
 inputR f = do
-             file <- readFile f
-             case parse ((infoLine >-| offset) >-> (oneOrMore inputBlock)) file of
-                  Just(p,s)  -> do
-                                  print (p,s)
-                                  print $ buildDims 2 (getSpan p)
-                                  let a = placeBlock (buildW (getSpan p) 2 p) (head p)
-                                  print (dim a)
-                                  print a
-                                  --print $ parse inputBlock s
-                  _          -> print "ERROR"
+    file <- readFile f
+    case parse ((infoLine >-| offset) >-> oneOrMore inputBlock) file of
+         Just(p,s) -> do
+                        print (p,s)
+                        print $ buildDims 2 (getSpan p)
+                        let a = placeBlock (buildW (getSpan p) 2 p) (head p)
+                        print (dim a)
+                        print a
+                        --print $ parse inputBlock s
+         _          -> print "ERROR"
 
-
------------------------------------------------------------------------------
-tim b = foldl (\(i, us) v -> (i+1, us !!= (i, v))) (2, b)
-test = foldl (\(n,l) e -> (n+1, l !!= (n,e))) (1, [1..4]) [1..3]
-
-dimensions = do char '('
-                c <- specString "cells "       >-> nat
-                l <- specString " length "     >-> nat
-                w <- specString " width "      >-> nat
-                g <- specString " generation " >-> nat
-                char ')'
-                return (c,l,w,g)
-
-patternName = do char '"'
-                 n <- oneOrMore $ sat (/= '"')
-                 char '"'
-                 return n
-
-comment = char '!' >-> do
-                         char ' '
-                         patternName
-                         char ' '
-                         dimensions
-                       +++ ignore (0,0,0,0)
-
-
-{- File structure
-  * comments: start with "!"
-  * world general info: ! "some-string" (cells <nat> length <nat> width <nat> generation <nat>)
-  * offset: <nat>k<nat>h@!
-  * row: (<nat>)?("."+"0")*
-         trailing: dead
-  * empty row: "." == all dead
-
--}

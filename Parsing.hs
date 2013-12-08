@@ -22,7 +22,18 @@ parse :: Parser a -> String -> Maybe(a,String)
 -- run a parser on a given string
 parse (P f) = f
 
--------------------
+-----------------------------------------------------------------------------
+{-= ADDITIONS TO PARSER LIBRARY =-}
+
+-- Allows to "peak" and see if and what next up is parsable with p.
+-- If succeeds, returns the parsed value BUT keep the input string intact.
+peak :: Parser a -> Parser a
+peak p = P $ \s ->
+         case parse p s of
+              Just(o,s')  -> Just(o,s)
+              _           -> Nothing
+
+-----------------------------------------------------------------------------
 -- Basic Parsers, dependent on internal structure -- 
 -- success and fail
 failure :: Parser a -- always fails
@@ -102,13 +113,6 @@ chain p q = p <:> zeroOrMore (q >-> p)
 -- example: comma separated digits "1,2,3"
 diglist = chain digit (char ',') 
 
-
-peak :: Parser a -> Parser a
-peak p = P $ \s ->
-         case parse p s of
-              Just(o,s')  -> Just(o,s)
-              _           -> Nothing
- 
 
 
 

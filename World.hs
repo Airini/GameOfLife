@@ -2,16 +2,23 @@ module World where
 
 import Data.Char
 
+-- Class for cells in a World for GOL
 class (Eq l) => LiveCell l where
+  -- cell states
   isAlive :: l -> Bool
-  isDead :: l -> Bool
-  die :: l -> l
-  born :: l -> l
+  isDead  :: l -> Bool
+  -- transitions
+  die     :: l -> l
+  born    :: l -> l
   survive :: l -> l
-  showText :: l -> Char
-  getColour :: l -> (Float, Float, Float)
+  -- constants for newly created cells
   deadC :: l
   newlC :: l
+  -- visual representations
+  showText :: l -> Char
+  getColour :: l -> (Float, Float, Float)
+
+type Pair = (Int, Int)
 
 data World a = World { dim :: Pair, cells :: [[a]] }
     deriving Eq
@@ -25,19 +32,21 @@ data World a = World { dim :: Pair, cells :: [[a]] }
 --    World :: LiveCell a => { dim :: Pair, cells :: [[a]] } -> World a
 --    deriving Eq
 
-type Pair = (Int, Int)
-
 instance LiveCell a => Show (World a) where
   show = showWorld
 
 showWorld :: LiveCell a => World a -> String
-showWorld w = concatMap ((++ "\n") . (map showText)) (cells w)
+showWorld w = concatMap ((++ "\n") . map showText) (cells w)
 
 -- Given a base representation where liveness is indicated by boolean values,
 -- a World of an appropriate LiveCell type of cells is constructed
 fillCells :: LiveCell a => World Bool -> World a
 fillCells (World d cs) =
     World d (map (map (\b -> if b then newlC else deadC)) cs)
+
+
+-----------------------------------------------------------------------------
+{-= Type instances for GOL world cells =-}
 
 instance LiveCell Bool where
   isAlive   = id
@@ -80,7 +89,9 @@ stillL = World (4,4) [replicate 4 False,
                       [False,True,True,False],
                       replicate 4 False]
 
-blinker = World (3,3) [ [False,True,False] | x <- ["I will","go to","sleep now."] ]
+blinker = World (3,3) [[False,True,False] |
+                       x <- ["I will","go to","sleep now."]]
 
-blinkerAging = World (3,3) [ ([0,90,0] ::[Int])| x <- ["Aging","works","now!"] ]
+blinkerAging = World (3,3) [[0,90,0] ::[Int] |
+                            x <- ["Aging","works","now!"]]
 
