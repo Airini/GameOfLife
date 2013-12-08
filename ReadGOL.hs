@@ -42,23 +42,23 @@ ignore t = zeroOrMore (sat (/= '\n')) >-> char '\n' >-> return t
 -- Parses an offset (in the world map) pair with respect to the origin (0,0)
 offset :: Parser Pair
 offset = specString "#P" >-> oneOrMore (sat isSpace) >->
-         (integer >*> (\y -> oneOrMore (sat isSpace) >->
-                             integer >*> \x -> success (x,y))) <-< char '\n'
+         (integer >*> (\x -> oneOrMore (sat isSpace) >->
+                             integer >*> \y -> success (x,y))) <-< char '\n'
 
 offset' :: Parser Pair
 offset' = specString "#P" >-> oneOrMore (sat isSpace) >->
           do
-            y <- integer
-            x <- oneOrMore (sat isSpace) >-> integer <-< char '\n'
+            x <- integer
+            y <- oneOrMore (sat isSpace) >-> integer <-< char '\n'
             return (x,y)
 
 offset'' :: Parser Pair
 offset'' = do
              specString "#P"
              oneOrMore (sat isSpace)
-             y <- integer
-             oneOrMore (sat isSpace)
              x <- integer
+             oneOrMore (sat isSpace)
+             y <- integer
              char '\n'
              return (x,y)
 
@@ -94,14 +94,6 @@ row = do
 -- Parses a line of comments or other non-considered information
 infoLine :: Parser ()
 infoLine = char '#' >-> ignore ()
-
----- function for testing
-inputR f = do
-             file <- readFile f
-             case parse ((infoLine >-| offset) >-> oneOrMore inputBlock) file of
-                  Just(p,s)  -> print p
-                  _          -> print "ERROR"
-
 
 -- Data type representing a GOL input specification block
 data MapBlock = B { topLeft :: Pair, rows :: [[Bool]] }
@@ -139,7 +131,7 @@ min_max :: (Ord a, Ord b) => (c -> (a, b)) -> [c] -> (a, b)
 min_max f bs = funcTuple (minimum, maximum) (unzip (map f bs))
 
 buildW :: (Pair, Pair) -> Int -> [MapBlock] -> World Bool
-buildW xsys k bs = undefined
+buildW xsys k bs = foldl placeBlock base bs
     where dims = mapTuple (*2) (buildDims k xsys)
           base = emptyWorld dims
           mountBlocks = foldl placeBlock base bs
@@ -150,9 +142,6 @@ placeBlock (World d cs) (B p m) = World d (snd ret)
           ret = foldl (\(n, w) r -> (n+1, w !!= (n, snd (chunkIn (w !! n) r)))) (y, cs) m
           chunkIn b = foldl (\(i, us) v -> (i+1, us !!= (i, v))) (x, b)
 
-tim b = foldl (\(i, us) v -> (i+1, us !!= (i, v))) (2, b)
-test = foldl (\(n,l) e -> (n+1, l !!= (n,e))) (1, [1..4]) [1..3]
-
 buildDims :: Int -> (Pair, Pair) -> Pair
 buildDims k (αp, ßp) = mapTuple (*k) (maxExt αp, maxExt ßp)
     where maxExt (α, ß) = max (abs α) (abs ß)
@@ -160,34 +149,36 @@ buildDims k (αp, ßp) = mapTuple (*k) (maxExt αp, maxExt ßp)
 
 -- xs: fst dim
 -- ys: snd dim
-wordy :: [MapBlock] -> World Bool
 --wordy bs = World (xs,ys) rows
-wordy = undefined
-
-
-worldify :: [[Bool]] -> Int -> Int -> [[Bool]]
-worldify []     xs ys = replicate ys (replicate xs False)
-worldify (r:rs) xs ys = (r ++ replicate (xs - length r) False) : worldify rs xs ys
+worldify :: [MapBlock] -> Int -> World Bool
+worldify ms k = buildW (getSpan ms) k ms
 
 -- Reads a world map from a specified file
-readLife :: FilePath -> IO (World Bool)
-readLife f = do
+readLife :: FilePath -> Int -> IO (World Bool)
+readLife f k = do
     file <- readFile f
-    case parse ((infoLine >-| offset) >-> inputBlock) file of
-         Just(p,s) -> case p of
-                           B (x,y) (r:rs) -> do
-                                               print (x,y)
-                                               print $ getSpan (replicate 4 (B (x,y) (r:rs)))
-                                               return $ World (length r -x, length (r:rs))
-                                                            (worldify (r:rs)
-                                                              (length r - x)
-                                                              (length (r:rs)))
-                           _              -> error "readLife : wrong format or "
-                                                   "unsupported format"
-         _         -> error "readLife : wrong format or unsupported format"
+    case parse ((infoLine >-| offset) >-> oneOrMore inputBlock <-< zeroOrMore (sat isSpace)) file of
+         Just(p,"") -> return $ worldify p k
+         _          -> error "readLife: ill-formed input life file"
+
+---- function for testing
+inputR f = do
+             file <- readFile f
+             case parse ((infoLine >-| offset) >-> (oneOrMore inputBlock)) file of
+                  Just(p,s)  -> do
+                                  print (p,s)
+                                  print $ buildDims 2 (getSpan p)
+                                  let a = placeBlock (buildW (getSpan p) 2 p) (head p)
+                                  print (dim a)
+                                  print a
+                                  --print $ parse inputBlock s
+                  _          -> print "ERROR"
 
 
 -----------------------------------------------------------------------------
+tim b = foldl (\(i, us) v -> (i+1, us !!= (i, v))) (2, b)
+test = foldl (\(n,l) e -> (n+1, l !!= (n,e))) (1, [1..4]) [1..3]
+
 dimensions = do char '('
                 c <- specString "cells "       >-> nat
                 l <- specString " length "     >-> nat

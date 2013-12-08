@@ -33,6 +33,12 @@ instance LiveCell a => Show (World a) where
 showWorld :: LiveCell a => World a -> String
 showWorld w = concatMap ((++ "\n") . (map showText)) (cells w)
 
+-- Given a base representation where liveness is indicated by boolean values,
+-- a World of an appropriate LiveCell type of cells is constructed
+fillCells :: LiveCell a => World Bool -> World a
+fillCells (World d cs) =
+    World d (map (map (\b -> if b then newlC else deadC)) cs)
+
 instance LiveCell Bool where
   isAlive   = id
   isDead    = not
@@ -51,8 +57,8 @@ instance LiveCell Int where
   die c     = 0
   born c    = 1
   survive c = c + 1  -- or: survive = (+1)
-  showText c | isAlive c = chr (c - ord '0')
-         | otherwise = ' '
+  showText c | isAlive c = chr (c + ord '0')
+             | otherwise = '.'
   getColour c = (t,t,0)
     where
       t | c < maxAge = 1 - (fromIntegral c / fromIntegral maxAge)
@@ -63,10 +69,10 @@ instance LiveCell Int where
 maxAge = 100
 
 fullWorld :: Pair -> World Bool
-fullWorld d = World d (replicate (fst d) (replicate (snd d) True))
+fullWorld d = World d (replicate (snd d) (replicate (fst d) True))
 
 emptyWorld :: Pair -> World Bool
-emptyWorld d = World d (replicate (fst d) (replicate (snd d) False))
+emptyWorld d = World d (replicate (snd d) (replicate (fst d) False))
 
 stillL :: World Bool
 stillL = World (4,4) [replicate 4 False,
@@ -77,3 +83,4 @@ stillL = World (4,4) [replicate 4 False,
 blinker = World (3,3) [ [False,True,False] | x <- ["I will","go to","sleep now."] ]
 
 blinkerAging = World (3,3) [ ([0,90,0] ::[Int])| x <- ["Aging","works","now!"] ]
+
