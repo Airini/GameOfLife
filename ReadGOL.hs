@@ -116,7 +116,7 @@ inputBlock = do
         sqr  = map (\r -> r ++ replicate (cols - length r) False) m
     return (B p sqr)
 
-funcTuple :: ((a -> b), (c -> d)) -> (a, c) -> (b, d)
+funcTuple :: (a -> b, c -> d) -> (a, c) -> (b, d)
 funcTuple (f, g) (x,y) = (f x, g y)
 
 mapTuple :: (a -> b) -> (a, a) -> (b, b)
@@ -148,9 +148,9 @@ placeBlock :: World Bool -> MapBlock -> World Bool
 placeBlock (World d cs) (B p m) = World d (snd ret)
     where (x,y) = funcTuple (mapTuple ((+) . (`div` 2)) d) p   -- equivalent to d/2 + p
           ret = foldl (\(n, w) r -> (n+1, w !!= (n, snd (chunkIn (w !! n) r)))) (y, cs) m
-          chunkIn b ts = foldl (\(i, us) v -> (i+1, us !!= (i, v))) (x, b) ts
+          chunkIn b = foldl (\(i, us) v -> (i+1, us !!= (i, v))) (x, b)
 
-tim b ts = foldl (\(i, us) v -> (i+1, us !!= (i, v))) (2, b) ts
+tim b = foldl (\(i, us) v -> (i+1, us !!= (i, v))) (2, b)
 test = foldl (\(n,l) e -> (n+1, l !!= (n,e))) (1, [1..4]) [1..3]
 
 buildDims :: Int -> (Pair, Pair) -> Pair
