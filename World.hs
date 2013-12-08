@@ -40,7 +40,7 @@ instance LiveCell Bool where
   born c    = True
   survive c = True -- should make it better: c && True, equivalent to : c
   showText c | isAlive c = '#'
-             | otherwise = ' '
+             | otherwise = '.'
   getColour c = (1,1,0)
   deadC     = False
   newlC     = True
