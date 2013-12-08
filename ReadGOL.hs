@@ -145,8 +145,8 @@ buildW xsys k bs = undefined
           mountBlocks = foldl placeBlock base bs
 
 placeBlock :: World Bool -> MapBlock -> World Bool
-placeBlock (World d cs) (B (x,y) m) = World d (snd ret)
-    where --(x,y) = funcTuple (mapTuple ((-) . (div 2)) d) p   -- equivalent to p - d
+placeBlock (World d cs) (B p m) = World d (snd ret)
+    where (x,y) = funcTuple (mapTuple ((+) . (`div` 2)) d) p   -- equivalent to d/2 + p
           ret = foldl (\(n, w) r -> (n+1, w !!= (n, snd (chunkIn (w !! n) r)))) (y, cs) m
           chunkIn b ts = foldl (\(i, us) v -> (i+1, us !!= (i, v))) (x, b) ts
 
