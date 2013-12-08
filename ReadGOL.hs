@@ -165,7 +165,7 @@ getSpan bs = (min_max xIn bs, min_max yIn bs)
 -- Builds a world from a set of map blocks, given a scaling factor and the
 -- range in which specified cells exist across each dimension
 buildW :: (Pair, Pair) -> Int -> [MapBlock] -> World Bool
-buildW xsys k bs = foldl placeBlock base bs
+buildW xsys k = foldl placeBlock base
     where dims = mapTuple (*2) (buildDims k xsys)
           base = emptyWorld dims
 
