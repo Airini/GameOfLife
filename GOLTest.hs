@@ -6,7 +6,7 @@ import GOL
 import ReadGOL
 
 cell :: LiveCell a => Gen a
-cell = frequency [(9, return deadC), (2, return newlC)]
+cell = frequency [(13, return deadC), (2, return newlC)]
 
 instance LiveCell a => Arbitrary (World a) where
   arbitrary =
@@ -15,4 +15,25 @@ instance LiveCell a => Arbitrary (World a) where
        rows <- sequence [ sequence [ cell | i <- [1..fst d] ]
                                    | j <- [1..snd d]]
        return (World d rows)
+
+prop_wellFormedWorld :: LiveCell a => World a -> Bool
+prop_wellFormedWorld w = length (cells w) == snd (dim w) &&
+                         all validR (cells w)
+    where validR s = (fst (dim w) == length s) &&
+                     all (\c -> isAlive c || isDead c) s
+
+prop_periodicTicks :: LiveCell a => Int -> World a -> Int -> Property
+prop_periodicTicks s w m = w == tickN w period ==> w == tickN w (2 * period)
+    where tickN w 0 = w
+          tickN w n = tick $ tickN w (n-1)
+          period = mod m (div maxAge s)
+
+-------------------------------------------------------------------------
+
+-- QuickCheck helper: allows determining number of examples to check
+numberChecks n = quickCheckWith stdArgs{ maxSuccess = n }
+
+
+
+
 
