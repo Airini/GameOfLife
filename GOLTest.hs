@@ -28,6 +28,14 @@ prop_periodicTicks s w m = w == tickN w period ==> w == tickN w (2 * period)
           tickN w n = tick $ tickN w (n-1)
           period = mod m (div maxAge s)
 
+prop_eqPeriodicTicks :: LiveCell a => Int -> World a -> Int -> Property
+prop_eqPeriodicTicks s w m =
+        equivLifeW w (tickN w period) ==> equivLifeW w (tickN w (2 * period))
+    where tickN w 0 = w
+          tickN w n = tick $ tickN w (n-1)
+          period = mod m (div maxAge s)
+
+
 prop_guns :: LiveCell a => Int -> World a -> Int -> Property
 prop_guns = undefined
 

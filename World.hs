@@ -7,6 +7,8 @@ class (Eq l) => LiveCell l where
   -- cell states
   isAlive :: l -> Bool
   isDead  :: l -> Bool
+  eqLiveness :: l -> l -> Bool
+  eqLiveness a b = isAlive a == isAlive b
   -- transitions
   die     :: l -> l
   born    :: l -> l
@@ -31,6 +33,13 @@ data World a = World { dim :: Pair, cells :: [[a]] }
     --World :: LiveCell a => a -> World a
 --    World :: LiveCell a => { dim :: Pair, cells :: [[a]] } -> World a
 --    deriving Eq
+
+equivLifeW :: LiveCell a => World a -> World a -> Bool
+equivLifeW v w = dim v == dim w &&
+                 all (\(a, b) -> eqLiveness a b)
+                     (concatMap zipCols zippedRows)
+    where zippedRows = zip (cells v) (cells w)
+          zipCols rp = zip (fst rp)  (snd rp)
 
 instance LiveCell a => Show (World a) where
   show = showWorld
