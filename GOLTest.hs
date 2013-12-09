@@ -5,8 +5,32 @@ import World
 import GOL
 import ReadGOL
 
+-- Constant to determine how old a cell can initally be in testing, scaled
+-- from the maximum age for a cell given the modified behaviour with respect
+-- to standard GOL rules of cells aging past that limit
+ageScale = div maxAge 5
+
+-----------------------------------------------------------------------------
+{-= Helper functions that deal with the pure structure (ie: not arbitary) =-}
+agedLife :: LiveCell a => World a -> World a -> Int -> Bool
+agedLife w w' n = w' == (World (dim w) (map (map (ageCell n)) (cells w)))
+
+ageCell :: LiveCell a => Int -> a -> a
+ageCell n c | n <= 0    = c
+            | isAlive c = survive (ageCell (n-1) c)
+            | otherwise = deadC
+
+tickN :: LiveCell a => World a -> Int -> World a
+tickN w n | n <= 0    = w
+          | otherwise = tick $ tickN w (n-1)
+
+-----------------------------------------------------------------------------
+{-= Generators and arbitrary instances =-}
 cell :: LiveCell a => Gen a
-cell = frequency [(17, return deadC), (2, return newlC)]
+cell = frequency [(17, return deadC), (2, rLiveC)]
+    where rLiveC = do
+                     age <- elements [1..ageScale]
+                     return $ ageCell age newlC
 
 instance LiveCell a => Arbitrary (World a) where
   arbitrary =
@@ -16,6 +40,8 @@ instance LiveCell a => Arbitrary (World a) where
                                    | j <- [1..snd d]]
        return (World d rows)
 
+-----------------------------------------------------------------------------
+{-= Properties =-}
 prop_wellFormedWorld :: LiveCell a => World a -> Bool
 prop_wellFormedWorld w = length (cells w) == snd (dim w) &&
                          all validR (cells w)
@@ -37,14 +63,6 @@ prop_agingStillLife s w = equivLifeW w (tick w) ==> agedLife w (tickN w n) n
     where n = mod s (div maxAge 2)
 -------
 
-agedLife :: LiveCell a => World a -> World a -> Int -> Bool
-agedLife w w' n = w' == (World (dim w) (map (map (ageCell n)) (cells w)))
-
-ageCell :: LiveCell a => Int -> a -> a
-ageCell n c | n <= 0    = c
-            | isAlive c = survive (ageCell (n-1) c)
-            | otherwise = deadC
-
 prop_periodicTicks :: LiveCell a => Int -> World a -> Int -> Property
 prop_periodicTicks s w m = w == tickN w period ==> w == tickN w (2 * period)
     where period = mod m (div maxAge s)
@@ -58,9 +76,9 @@ prop_guns :: LiveCell a => Int -> World a -> Int -> Property
 prop_guns = undefined
 
 -------------------------------------------------------------------------
+{-= From previous labs =-}
 
 -- QuickCheck helper: allows determining number of examples to check
 numberChecks n = quickCheckWith stdArgs{ maxSuccess = n }
-
 
 

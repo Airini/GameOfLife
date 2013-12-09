@@ -8,10 +8,6 @@ import World
 splitEv :: Eq a => Int -> [a] -> [[a]]
 splitEv n l = map (\m -> take n (drop m l)) [0,n..length l] \\ [[]]
 
-tickN :: LiveCell a => World a -> Int -> World a
-tickN w n | n <= 0    = w
-          | otherwise = tick $ tickN w (n-1)
-
 tick :: (LiveCell a) => World a -> World a
 tick w = World (dim w) rows
     where rows = splitEv xs (iterateCells w 0 0)
