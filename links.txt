@@ -24,4 +24,14 @@ Game Of Life resources (maps, etc)
 - http://www.ericweisstein.com/encyclopedias/life/InfiniteGrowth.html
 
 
+## For the testing section, to look more in depth later
+
+http://stackoverflow.com/questions/9686665/how-can-i-test-a-higher-order-function-using-quickcheck
+http://stackoverflow.com/questions/12884927/conditional-quickcheck-properties
+http://hackage.haskell.org/package/QuickCheck-2.6/docs/Test-QuickCheck-Modifiers.html
+http://www.haskell.org/haskellwiki/GHC/Type_families#An_associated_data_type_example
+http://www.cs.utexas.edu/~ragerdl/fmcad11/slides/tutorial-a.pdf
+http://hackage.haskell.org/package/QuickCheck-2.6/docs/src/Test-QuickCheck-All.html
+http://www.cse.chalmers.se/~rjmh/QuickCheck/manual.html
+
 
