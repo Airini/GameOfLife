@@ -6,12 +6,12 @@ import GOL
 import ReadGOL
 
 cell :: LiveCell a => Gen a
-cell = frequency [(13, return deadC), (2, return newlC)]
+cell = frequency [(17, return deadC), (2, return newlC)]
 
 instance LiveCell a => Arbitrary (World a) where
   arbitrary =
     do a <- arbitrary
-       let d = mapTuple ((+1) . (`mod` 200)) a
+       let d = mapTuple ((+1) . (`mod` 50)) a
        rows <- sequence [ sequence [ cell | i <- [1..fst d] ]
                                    | j <- [1..snd d]]
        return (World d rows)
@@ -22,6 +22,8 @@ prop_wellFormedWorld w = length (cells w) == snd (dim w) &&
     where validR s = (fst (dim w) == length s) &&
                      all (\c -> isAlive c || isDead c) s
 
+-------
+--- Might actually remove these since they are subsumed by the periodic tests
 prop_stillLife :: LiveCell a => Int -> World a -> Property
 prop_stillLife s w = w == tick w ==> w == tickN w reps
     where reps = mod s (div maxAge 2)
@@ -30,7 +32,19 @@ prop_eqStillLife :: LiveCell a => Int -> World a -> Property
 prop_eqStillLife s w = equivLifeW w (tick w) ==> equivLifeW w (tickN w reps)
     where reps = mod s (div maxAge 2)
 
---prop_agingStillLife :: LiveCell a => In
+prop_agingStillLife :: LiveCell a => Int -> World a -> Property
+prop_agingStillLife s w = equivLifeW w (tick w) ==> agedLife w (tickN w n) n
+    where n = mod s (div maxAge 2)
+-------
+
+agedLife :: LiveCell a => World a -> World a -> Int -> Bool
+agedLife w w' n = w' == (World (dim w) (map (map (ageCell n)) (cells w)))
+
+ageCell :: LiveCell a => Int -> a -> a
+ageCell n c | n <= 0    = c
+            | isAlive c = survive (ageCell (n-1) c)
+            | otherwise = deadC
+
 prop_periodicTicks :: LiveCell a => Int -> World a -> Int -> Property
 prop_periodicTicks s w m = w == tickN w period ==> w == tickN w (2 * period)
     where period = mod m (div maxAge s)

@@ -41,7 +41,6 @@ equivLifeW v w = dim v == dim w &&
     where zippedRows = zip (cells v) (cells w)
           zipCols rp = zip (fst rp)  (snd rp)
 
-
 instance LiveCell a => Show (World a) where
   show = showWorld
 
