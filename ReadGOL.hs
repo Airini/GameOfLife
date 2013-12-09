@@ -191,16 +191,4 @@ readLife f k = do
          Just(p,"") -> return $ worldify p k
          _          -> error "readLife: ill-formed input life file"
 
----- function for testing
-inputR f = do
-    file <- readFile f
-    case parse ((infoLine >-| offset) >-> oneOrMore inputBlock) file of
-         Just(p,s) -> do
-                        print (p,s)
-                        print $ buildDims 2 (getSpan p)
-                        let a = placeBlock (buildW (getSpan p) 2 p) (head p)
-                        print (dim a)
-                        print a
-                        --print $ parse inputBlock s
-         _          -> print "ERROR"
 

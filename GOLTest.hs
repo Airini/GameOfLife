@@ -98,6 +98,26 @@ prop_spaceship :: LiveCell a => World a -> Property
 prop_spaceship = undefined
 
 -------------------------------------------------------------------------
+{-==-}
+
+instance Arbitrary MapBlock where
+  arbitrary =
+    do offset <- elements [ (x,y) | x <- [(-20)..20], y <- [(-20)..20]]
+       xs <- choose (1,10) :: Gen Int
+       ys <- choose (1,10) :: Gen Int
+       lives <- sequence [sequence [arbitrary | i <- [1..xs]] | j <- [1..ys]]
+       return $ B offset lives
+
+blockSet :: Gen [MapBlock]
+blockSet = do
+            n <- choose (1,8) :: Gen Int
+            l <- sequence [arbitrary | i <- [1..n]]
+            return l
+
+--prop_readExpr e =  isJust e' &&  eval e == eval (fromJust e')
+--  where e' = readExpr (showExpr e)
+
+-------------------------------------------------------------------------
 {-= From previous labs =-}
 
 -- QuickCheck helper: allows determining number of examples to check
