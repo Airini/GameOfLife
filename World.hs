@@ -17,7 +17,7 @@ class (Eq l) => LiveCell l where
   deadC :: l
   newlC :: l
   -- visual representations
-  showText :: l -> Char
+  showText :: l -> String
   getColour :: l -> (Float, Float, Float)
 
 type Pair = (Int, Int)
@@ -45,7 +45,7 @@ instance LiveCell a => Show (World a) where
   show = showWorld
 
 showWorld :: LiveCell a => World a -> String
-showWorld w = concatMap ((++ "\n") . map showText) (cells w)
+showWorld w = concatMap ((++ "\n") . concatMap showText) (cells w)
 
 -- Given a base representation where liveness is indicated by boolean values,
 -- a World of an appropriate LiveCell type of cells is constructed
@@ -63,8 +63,8 @@ instance LiveCell Bool where
   die c     = False
   born c    = True
   survive c = True -- should make it better: c && True, equivalent to : c
-  showText c | isAlive c = '#'
-             | otherwise = '.'
+  showText c | isAlive c = "#"
+             | otherwise = "."
   getColour c = (1,1,0)
   deadC     = False
   newlC     = True
@@ -75,8 +75,11 @@ instance LiveCell Int where
   die c     = 0
   born c    = 1
   survive c = c + 1  -- or: survive = (+1)
-  showText c | isAlive c = chr (c + ord '0')
-             | otherwise = '.'
+  showText c = (replicate (prefix c') ' ') ++ t
+    where c' | isAlive c = c
+             | otherwise = 1
+          t | isAlive c = show c
+            | otherwise = "."
   getColour c = (t,t,0)
     where
       t | c < maxAge = 1 - (fromIntegral c / fromIntegral maxAge)
@@ -85,6 +88,12 @@ instance LiveCell Int where
   newlC     = 1
 
 maxAge = 100
+prefix n = (order maxAge) - (order n) + 1
+
+order :: Int -> Int
+order 0 = 0
+order n = 1 + order (div n' 10)
+    where n' = abs n
 
 fullWorld :: Pair -> World Bool
 fullWorld d = World d (replicate (snd d) (replicate (fst d) True))
