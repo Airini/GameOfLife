@@ -4,6 +4,9 @@ import World
 import Parsing
 import Data.Char
 
+{-== NOTE: the _Parsing_ library has been augmented with one extra function
+  with respect to the given one (function: _peak_) ==-}
+
 -----------------------------------------------------------------------------
 {-= From our module _Sudoku_ (lab 3) =-}
 

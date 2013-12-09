@@ -1,14 +1,25 @@
 This project is a basic implementation for a Game of Life world. The
-initialization state is read from a file following standard game of life
-world format.  Further information about the world's format can be found
-here:
-==TODO== IRENE's link for the format description ==TODO==
+initialization state is read from a file using the Life 1.05 standard game of
+life world format as a base (http://www.conwaylife.com/wiki/Life_1.05).
+
+Some variations of this standard are made:
+- normal rules are always assumed, so any line specifying alternate rules
+  (those starting with "#R") are ignored along with the rest of description
+  lines
+- rows in the blocks to be put in the world can be specified in the plain,
+  ordinary way (cell by cell) or by parameterising with numbers how many
+  consecutive cells have the same state; examples would be:
+  · plain row: ...*..*
+  · parameterised row: 2.4*25.*.*7.2.
+    equivalent to: [2 dead, 4 alive, 25 dead, 1 alive, 1 dead, 1 alive,
+                    7 dead, 2 dead]
+  both formats can be combined in any single row described in the file
 
 The program can operate in two modes: with or without aging. With aging each
 live cell from in the initialization state starts with age 1 and in every
 iteration this age is increased by one if the live cell stays alive. A world
-has a maximum possible age which is the upper bound for all the cells' age in
-the given world. Exceeding this bound the cell turns into a dead cell.
+has a maximum possible age which is the upper bound for all the cells' ages
+in the given world. Exceeding this bound the cell turns into a dead cell.
 
 The rest of the rules applied on the dead and live cells are identical to the
 rules described on the Wikipedia's Game of Life page:
