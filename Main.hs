@@ -6,11 +6,20 @@ import Graphics.UI.GLUT
 import Data.IORef
 import Bindings
 import Display
+import ReadGOL
+import System.Environment
 
 main :: IO ()
 main = do
-         let initW = blinkerAging
-         runGame initW
+    args <- getArgs
+    let file | args == [] = error "\nDear Sir!\nGive me a GOL file!"
+             | otherwise  = head args
+    simpleWorld <- readLife file 1
+
+    select simpleWorld args
+    where select w as | length as == 2 &&
+                        as !! 1 == "aging" = runGame (fillCells w ::World Int)
+                      | otherwise = runGame w
 
 runGame :: (LiveCell a) => World a -> IO ()
 runGame w = do
@@ -31,4 +40,4 @@ redisplay w = do
     w $~! tick
     addTimerCallback timerMs (redisplay w)
 
-timerMs = 250
+timerMs = 100

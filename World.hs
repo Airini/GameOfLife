@@ -92,6 +92,6 @@ stillL = World (4,4) [replicate 4 False,
 blinker = World (3,3) [[False,True,False] |
                        x <- ["I will","go to","sleep now."]]
 
-blinkerAging = World (3,3) [[0,90,0] ::[Int] |
+blinkerAging = World (3,3) [[0,1,0] ::[Int] |
                             x <- ["Aging","works","now!"]]
 

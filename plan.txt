@@ -1,18 +1,18 @@
 Parsing - Miss. I
-  - comment lines : #(...)
-  - blocks of rows:
+  + comment lines : #(...)
+  + blocks of rows:
     #P x y
     ...
     ...
 
 Displaying - Mr. A
-  - almost done
-  - modify to use LiveCell class functions (isAlive, isDead)
+  + almost done
+  + modify to use LiveCell class functions (isAlive, isDead)
 
 Testing
   - update cell:
-    * only modify cell
-    * aging - x -> die OR x -> survive x
+    A: * only modify cell
+    A: * aging - x -> die OR x -> survive x
   - parsing:
     * check world is consistent with the dimension
     * some unit quickCheck tests (eg: specString)
@@ -22,9 +22,9 @@ Data (structures, etc) - Miss. I
   - refactor tick, update, etc functions => GOL
 
 Main - Mr. A
-  - do readWorld
+  + do readWorld
        startGame
-  - startGame ...
+  + startGame ...
     OPTIONS:
       * idle binding : does tick + displays
       * keyboard binding : for going a step forward in the world state
