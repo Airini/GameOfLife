@@ -88,8 +88,12 @@ instance LiveCell Int where
   newlC     = 1
 
 maxAge = 100
+
+-- Figures out the prefix space padding for the display for Int cells
+prefix :: Int -> Int
 prefix n = (order maxAge) - (order n) + 1
 
+-- Calculates the order of magnitude of an integer in powers of 10
 order :: Int -> Int
 order 0 = 0
 order n = 1 + order (div n' 10)

@@ -4,6 +4,7 @@ import Test.QuickCheck
 import World
 import GOL
 import ReadGOL
+import Data.List
 
 -- Constant to determine how old a cell can initally be in testing, scaled
 -- from the maximum age for a cell given the modified behaviour with respect
@@ -24,6 +25,23 @@ tickN :: LiveCell a => World a -> Int -> World a
 tickN w n | n <= 0    = w
           | otherwise = tick $ tickN w (n-1)
 
+isTranslation :: LiveCell a => World a -> World a -> Bool
+isTranslation v w = horzTransl t l || horzTransl l t ||
+                    vertTransl t l || vertTransl l t ||
+                    diagTransl t l || diagTransl l t
+    where t = cells v
+          l = cells w
+          xs = fst $ dim v
+          ys = snd $ dim v
+          ds = min xs ys
+
+horzTransl ([]:ts) _  = False
+horzTransl as bs      = all (\(a,b) -> isPrefixOf a b) (zip as bs) ||
+                        horzTransl (map tail as) bs
+vertTransl []      _  = False
+vertTransl (a:as)  bs = isPrefixOf (a:as) bs || vertTransl as bs
+diagTransl _  _  = True
+
 -----------------------------------------------------------------------------
 {-= Generators and arbitrary instances =-}
 cell :: LiveCell a => Gen a
@@ -35,7 +53,7 @@ cell = frequency [(17, return deadC), (2, rLiveC)]
 instance LiveCell a => Arbitrary (World a) where
   arbitrary =
     do a <- arbitrary
-       let d = mapTuple ((+1) . (`mod` 50)) a
+       let d = mapTuple ((+1) . (`mod` 100)) a
        rows <- sequence [ sequence [ cell | i <- [1..fst d] ]
                                    | j <- [1..snd d]]
        return (World d rows)
@@ -61,19 +79,23 @@ prop_eqStillLife s w = equivLifeW w (tick w) ==> equivLifeW w (tickN w reps)
 prop_agingStillLife :: LiveCell a => Int -> World a -> Property
 prop_agingStillLife s w = equivLifeW w (tick w) ==> agedLife w (tickN w n) n
     where n = mod s (div maxAge 2)
+
 -------
 
-prop_periodicTicks :: LiveCell a => Int -> World a -> Int -> Property
-prop_periodicTicks s w m = w == tickN w period ==> w == tickN w (2 * period)
+prop_oscillator :: LiveCell a => Int -> World a -> Int -> Property
+prop_oscillator s w m = w == tickN w period ==> w == tickN w (2 * period)
     where period = mod m (div maxAge s)
 
-prop_eqPeriodicTicks :: LiveCell a => Int -> World a -> Int -> Property
-prop_eqPeriodicTicks s w m =
+prop_eqOscillator :: LiveCell a => Int -> World a -> Int -> Property
+prop_eqOscillator s w m =
         equivLifeW w (tickN w period) ==> equivLifeW w (tickN w (2 * period))
     where period = mod m (div maxAge s)
 
-prop_guns :: LiveCell a => Int -> World a -> Int -> Property
-prop_guns = undefined
+prop_glider :: LiveCell a => Int -> World a -> Int -> Property
+prop_glider = undefined
+
+prop_spaceship :: LiveCell a => World a -> Property
+prop_spaceship = undefined
 
 -------------------------------------------------------------------------
 {-= From previous labs =-}
