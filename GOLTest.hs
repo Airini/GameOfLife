@@ -97,6 +97,15 @@ prop_glider = undefined
 prop_spaceship :: LiveCell a => World a -> Property
 prop_spaceship = undefined
 
+-- /== checks valid tranitions between states
+prop_updateCell :: World Int -> Bool
+prop_updateCell w = all (\(x,y) -> updateCell w x y /== ((cells w) !! y !! x)) ps
+    where ps = [(x,y) | x <- [0..(fst . dim $ w)], y <- [0..(snd . dim $ w)]]
+          cl /== cr = (isDead cl && cr == 1) ||
+                      (isAlive cl && isDead cr) ||
+                      (isDead cl && isDead cr) ||
+                      (isAlive cl && cl == (cr+1))
+
 -------------------------------------------------------------------------
 {-==-}
 
