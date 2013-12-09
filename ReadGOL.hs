@@ -42,7 +42,7 @@ nat = do ds <- oneOrMore digit
          return (read ds)
 
 -- Integer parser
-integer :: Parser Int 
+integer :: Parser Int
 integer = nat +++ neg -- natural or negative
   where neg = do char '-'
                  n <- nat
@@ -52,7 +52,7 @@ integer = nat +++ neg -- natural or negative
 -----------------------------------------------------------------------------
 {-= Generic parsers =-}
 
--- Parses using a first parser until an occurrence parsable by a seond
+-- Parses using a first parser until an occurrence parsable by a second
 -- parser is encountered, ie: it is equivalent to "parse a until b is parsed"
 --  NOTE: uses _peak_ which we added to the _Parsing_ module since it
 --        employs the definition of the _Parser_ constructor, not exported
@@ -79,19 +79,7 @@ infoLine = char '#' >-> ignore ()
 
 -- Parses an offset (in the world map) pair with respect to the origin (0,0)
 offset :: Parser Pair
-offset = specString "#P" >-> oneOrMore (sat isSpace) >->
-         (integer >*> (\x -> oneOrMore (sat isSpace) >->
-                             integer >*> \y -> success (x,y))) <-< char '\n'
-
-offset' :: Parser Pair
-offset' = specString "#P" >-> oneOrMore (sat isSpace) >->
-          do
-            x <- integer
-            y <- oneOrMore (sat isSpace) >-> integer <-< char '\n'
-            return (x,y)
-
-offset'' :: Parser Pair
-offset'' = do
+offset = do
              specString "#P"
              oneOrMore (sat isSpace)
              x <- integer
