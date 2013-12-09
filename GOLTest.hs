@@ -30,7 +30,7 @@ prop_eqStillLife :: LiveCell a => Int -> World a -> Property
 prop_eqStillLife s w = equivLifeW w (tick w) ==> equivLifeW w (tickN w reps)
     where reps = mod s (div maxAge 2)
 
-prop_agingStillLife :: LiveCell a => In
+--prop_agingStillLife :: LiveCell a => In
 prop_periodicTicks :: LiveCell a => Int -> World a -> Int -> Property
 prop_periodicTicks s w m = w == tickN w period ==> w == tickN w (2 * period)
     where period = mod m (div maxAge s)
