@@ -1,4 +1,4 @@
-module Display ( display) where
+module Display (reshape, keyboardMouse, display) where
 
 import Graphics.UI.GLUT
 import Control.Monad

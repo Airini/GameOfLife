@@ -3,6 +3,7 @@ module Points where
 import Graphics.Rendering.OpenGL
 import World
 
+-- Generates points for living cells in the world
 points :: LiveCell a => World a -> [(GLfloat,GLfloat,a)]
 points w = map (\(x,y,v) -> (x,y,v) ) lives
     where

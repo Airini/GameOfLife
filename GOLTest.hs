@@ -99,12 +99,14 @@ prop_spaceship = undefined
 
 -- /== checks valid tranitions between states
 prop_updateCell :: World Int -> Bool
-prop_updateCell w = all (\(x,y) -> updateCell w x y /== ((cells w) !! y !! x)) ps
-    where ps = [(x,y) | x <- [0..(fst . dim $ w)], y <- [0..(snd . dim $ w)]]
-          cl /== cr = (isDead cl && cr == 1) ||
-                      (isAlive cl && isDead cr) ||
-                      (isDead cl && isDead cr) ||
-                      (isAlive cl && cl == (cr+1))
+prop_updateCell w = all (\(x,y) -> ((cells w) !! y !! x) /== updateCell w x y) ps
+    where ps = [(x,y) | x <- [0..dimX], y <- [0..dimY]]
+          dimX = (fst . dim $ w) - 1
+          dimY = (snd . dim $ w) - 1
+          old /== new = (isDead  old && new == 1)   ||
+                        (isDead  old && isDead new) ||
+                        (isAlive old && isDead new) ||
+                        (isAlive old && old == (new-1))
 
 -------------------------------------------------------------------------
 {-==-}

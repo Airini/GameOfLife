@@ -4,9 +4,11 @@ import Graphics.UI.GLUT
 import Data.IORef
 import Display
 
+-- Reshapes the window when its size changed
 reshape :: ReshapeCallback
 reshape size = viewport $= (Position 0 0, size)
 
+-- Binds keyboard actions to zooming and camera positioning
 keyboardMouse :: IORef GLfloat -> IORef (GLfloat, GLfloat) -> KeyboardMouseCallback
 keyboardMouse z p key Down _ _ = case key of
   (Char 'q') -> leaveMainLoop

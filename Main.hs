@@ -4,7 +4,7 @@ import GOL
 import World
 import Graphics.UI.GLUT
 import Data.IORef
-import Bindings
+{-import Bindings-}
 import Display
 import ReadGOL
 import System.Environment
