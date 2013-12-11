@@ -40,6 +40,12 @@ For instance, the following command runs the program without aging:
 While this command runs the same game with aging:
   ./Main patterns/pic135.life aging
 
+Furthermore, the running program is capable of two modifications on the camera
+view: (1) positioning the camera, and (2) zooming. The former can be controlled
+by the arrow buttons on the keyboard, while the latter is controlled by the
+'+' and '-' buttons. The camera position is set to the middle of the world by
+default, but in case of a large world zooming and positioning to a certain
+part of the world might be handy.
 
 ** Differences from the initial proposal **
 
