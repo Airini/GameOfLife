@@ -24,7 +24,8 @@ tick w = World (dim w) rows
           ys = snd (dim w)
 
 -- Reports a cell's next state (ie: in the next tick) in a given world
--- x y are the coordinates of the cell to analyse
+-- x y are the coordinates of the cell to analyse applying the rules
+-- in the given world
 updateCell :: LiveCell a => World a -> Int -> Int -> a
 updateCell w x y | isAlive c && survival = survive c
                  | birth                 = born c

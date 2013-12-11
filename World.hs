@@ -80,6 +80,7 @@ instance LiveCell Int where
   deadC     = 0
   newlC     = 1
 
+-- Gives and upperbound for the set of ages
 maxAge = 100
 
 -- Figures out the prefix space padding for the display for Int cells
@@ -107,9 +108,7 @@ stillL = World (4,4) [replicate 4 False,
                       [False,True,True,False],
                       replicate 4 False]
 
-blinker = World (3,3) [[False,True,False] |
-                       x <- ["I will","go to","sleep now."]]
+blinker = World (3,3) [[False,True,False] | x <- [1..]]
 
-blinkerAging = World (3,3) [[0,1,0] ::[Int] |
-                            x <- ["Aging","works","now!"]]
+blinkerAging = World (3,3) [[0,1,0] ::[Int] | x <- [1..]]
 

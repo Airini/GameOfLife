@@ -1,4 +1,4 @@
-module Display (reshape, keyboardMouse, display) where
+module Display (reshape, keyboardMouse, display, newWorld) where
 
 import Graphics.UI.GLUT
 import Control.Monad
@@ -11,7 +11,8 @@ reshape :: ReshapeCallback
 reshape size = viewport $= (Position 0 0, size)
 
 -- Binds keyboard actions to zooming and camera positioning
-keyboardMouse :: IORef GLfloat -> IORef (GLfloat, GLfloat) -> KeyboardMouseCallback
+keyboardMouse :: IORef GLfloat -> IORef (GLfloat, GLfloat) ->
+                 KeyboardMouseCallback
 keyboardMouse z p key Down _ _ = case key of
   (Char 'q') -> leaveMainLoop
   (Char '+') -> z $~! (* 1.5)
@@ -24,7 +25,8 @@ keyboardMouse z p key Down _ _ = case key of
 keyboardMouse _ _ _ _ _ _ = return ()
 
 -- Draws the world with the zoom level and camera position
-display :: LiveCell a => IORef (World a) -> IORef GLfloat -> IORef (GLfloat, GLfloat) -> DisplayCallback
+display :: LiveCell a => IORef (World a) -> IORef GLfloat ->
+                         IORef (GLfloat, GLfloat) -> DisplayCallback
 display world zoom pos = do
   clear [ColorBuffer, DepthBuffer]
   clear [ColorBuffer]
@@ -51,6 +53,12 @@ display world zoom pos = do
         b = (\(_,_,x) -> float2GLfloat x) . getColour
         float2GLfloat x = realToFrac x ::GLfloat
 
+-- Priodic function that calculates the new world
+newWorld :: LiveCell a => IORef (World a) -> TimerCallback
+newWorld w = do
+    w $~! tick
+    addTimerCallback timerMs (newWorld w)
+  where timerMs = 100
 
 -- Generates points for living cells in the world
 points :: LiveCell a => World a -> [(GLfloat,GLfloat,a)]

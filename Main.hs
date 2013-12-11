@@ -4,7 +4,6 @@ import GOL
 import World
 import Graphics.UI.GLUT
 import Data.IORef
-{-import Bindings-}
 import Display
 import ReadGOL
 import System.Environment
@@ -30,14 +29,7 @@ runGame w = do
     world <- newIORef w
     zoom <- newIORef 0.25
     pos <- newIORef (0, 0)
-    addTimerCallback timerMs (redisplay world)
+    addTimerCallback 500 (newWorld world)
     keyboardMouseCallback $= Just (keyboardMouse zoom pos)
     displayCallback $= display world zoom pos
     mainLoop
-
-redisplay :: LiveCell a => IORef (World a) -> TimerCallback
-redisplay w = do
-    w $~! tick
-    addTimerCallback timerMs (redisplay w)
-
-timerMs = 100
