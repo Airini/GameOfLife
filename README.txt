@@ -17,6 +17,15 @@ Some variations of this standard are made:
                     7 dead, 2 dead]
   both formats can be combined in any single row described in the file
 
+A few patterns are included in the folder "patterns". Common patterns tested
+with (and those attached too) were obtained from:
+  http://www.radicaleye.com/lifepage/picgloss/picgloss.html
+
+Each pattern there links to its corresponding text representation.
+
+Larger and more complex patterns can be found at the same site:
+  http://www.radicaleye.com/lifepage/patterns/contents.html
+
 
 The program can operate in two modes: with or without aging. With aging each
 live cell from in the initialization state starts with age 1 and in every
