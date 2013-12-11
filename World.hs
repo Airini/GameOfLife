@@ -32,7 +32,7 @@ equivLifeW v w = dim v == dim w &&
                  all (uncurry eqLiveness)
                      (concatMap zipCols zippedRows)
     where zippedRows = zip (cells v) (cells w)
-          zipCols rp = zip (fst rp)  (snd rp)
+          zipCols    = uncurry zip
 
 instance LiveCell a => Show (World a) where
   show = showWorld
