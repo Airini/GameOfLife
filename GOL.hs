@@ -5,9 +5,14 @@ import Data.Maybe
 import Data.List
 import World
 
+
+-- From our module _Sudoku_ (lab 3): splits a list in chunks of size n
+-- producing a list of lists (list of chunks)
 splitEv :: Eq a => Int -> [a] -> [[a]]
 splitEv n l = map (\m -> take n (drop m l)) [0,n..length l] \\ [[]]
 
+-- Advances a world's state by one tick, ie: executed rules once (for all
+-- its cells)
 tick :: (LiveCell a) => World a -> World a
 tick w = World (dim w) rows
     where rows = splitEv xs (iterateCells w 0 0)
@@ -18,15 +23,14 @@ tick w = World (dim w) rows
           xs = fst (dim w)
           ys = snd (dim w)
 
--- TODO: add some comment about why cell with x and y is not needed to be
--- excluded.
+-- Reports a cell's next state (ie: in the next tick) in a given world
+-- x y are the coordinates of the cell to analyse
 updateCell :: LiveCell a => World a -> Int -> Int -> a
 updateCell w x y | isAlive c && survival = survive c
                  | birth                 = born c
                  | otherwise             = die c
     where c = cells w !! y !! x
-          nbrOfLivings = sum livingNeigh
-          livingNeigh  = concatMap getNeigh neighRows
+          nbrOfLivings = sum $ concatMap getNeigh neighRows
           getNeigh r   = map (neigh r) [xmin..xmax]
           neigh r x'   = if isAlive (r !! x') then 1 else 0
           neighRows    = map (cells w !!) [ymin..ymax]
@@ -40,3 +44,4 @@ updateCell w x y | isAlive c && survival = survive c
                | otherwise          = y-1
           ymax | y == snd (dim w)-1 = y
                | otherwise          = y+1
+

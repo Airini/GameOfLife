@@ -3,8 +3,6 @@ module Display (reshape, keyboardMouse, display) where
 import Graphics.UI.GLUT
 import Control.Monad
 import Data.IORef
-{-import Cube-}
-{-import Points-}
 import World
 import GOL
 

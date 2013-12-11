@@ -88,10 +88,21 @@ oscillatingWorld n =
          then return w
          else oscillatingWorld n
 
+{- ** --> Unfinished work: generator for gliders and spaceships
+   The (approximate) idea was to generate an arbitrary world, iterate it by
+   UP TO (so all intermediate states are checked, in an attempt to shorten
+   number of worlds one would have to generate until encountering an
+   appropriate one) a number of ticks (indicated by a parameter) and check if
+   the same pattern is detected somewhere other in the board (ie: after a
+   translation)
+-- ** --> here ends the unfinished block -}
+
 -----------------------------------------------------------------------------
 {-= Properties =-}
 
 -- Property got check arbitrary worlds are generated correctly
+-- NB: requires type definition when quickCheck'ed because of the sole
+--     specification of the class of LiveCell but not the actual type
 prop_wellFormedWorld :: LiveCell a => World a -> Bool
 prop_wellFormedWorld w = length (cells w) == snd (dim w) &&
                          all validR (cells w)
