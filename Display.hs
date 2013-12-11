@@ -36,15 +36,17 @@ display world zoom pos = do
   translate $ Vector3 x' y' 0
   preservingMatrix $ do
     z' <- get zoom
-    scale z' z' z'
+    scale z' z' 0
+    scale (s w) (s w) 0
     forM_ (points w) $ \(x,y,c) -> preservingMatrix $ do
       color $ Color3      (r c)         (g c)         (b c)
-      translate $ Vector3 ((-dimX w)/2) ((-dimY w)/2) (0::GLfloat)
+      translate $ Vector3 ((-1.5*dimX w)/2) ((-dimY w)/2) (0::GLfloat)
       translate $ Vector3 x             y             (0::GLfloat)
       cube 0.4
   swapBuffers
   postRedisplay Nothing
-  where dimX = fst' . dim
+  where s w = 10 / max (dimY w) (dimX w)
+        dimX = fst' . dim
         dimY = snd' . dim
         fst' = fromIntegral . fst
         snd' = fromIntegral . snd
