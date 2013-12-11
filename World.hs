@@ -80,7 +80,7 @@ instance LiveCell Int where
   deadC     = 0
   newlC     = 1
 
--- Gives and upperbound for the set of ages
+-- Gives an upper bound for the set of ages
 maxAge = 100
 
 -- Figures out the prefix space padding for the display for Int cells
