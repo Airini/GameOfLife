@@ -1,3 +1,5 @@
+# Lab 4: Game of Life  [ Team 18 ]
+
 This project is a basic implementation for a Game of Life world. The
 initialization state is read from a file using the Life 1.05 standard game of
 life world format as a base (http://www.conwaylife.com/wiki/Life_1.05).
@@ -14,6 +16,7 @@ Some variations of this standard are made:
     equivalent to: [2 dead, 4 alive, 25 dead, 1 alive, 1 dead, 1 alive,
                     7 dead, 2 dead]
   both formats can be combined in any single row described in the file
+
 
 The program can operate in two modes: with or without aging. With aging each
 live cell from in the initialization state starts with age 1 and in every
@@ -36,3 +39,14 @@ For instance, the following command runs the program without aging:
 
 While this command runs the same game with aging:
   ./Main patterns/pic135.life aging
+
+
+** Differences from the initial proposal **
+
+Because of the difficulties in using the gnuplot (actually, several of them)
+interface modules, we decided to switch to OpenGL for graphical visualisation.
+
+On the other hand, instead of extending to toroidal worlds, we decided to
+first implement the age colour-coding and didn't get to implement the toroidal
+world extension.
+
