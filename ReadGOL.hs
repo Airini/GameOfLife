@@ -5,7 +5,7 @@ import Parsing
 import Data.Char
 
 {-== NOTE: the _Parsing_ library has been augmented with one extra function
-  with respect to the given one (function: _peak_) ==-}
+           with respect to the given one (function: _peak_) ==-}
 
 -----------------------------------------------------------------------------
 {-= From our module _Sudoku_ (lab 3) =-}
@@ -83,13 +83,13 @@ infoLine = char '#' >-> ignore ()
 -- Parses an offset (in the world map) pair with respect to the origin (0,0)
 offset :: Parser Pair
 offset = do
-             specString "#P"
-             oneOrMore (sat isSpace)
-             x <- integer
-             oneOrMore (sat isSpace)
-             y <- integer
-             char '\n'
-             return (x,y)
+           specString "#P"
+           oneOrMore (sat isSpace)
+           x <- integer
+           oneOrMore (sat isSpace)
+           y <- integer
+           char '\n'
+           return (x,y)
 
 -- Parses a dead cell
 deadCell :: Parser Bool

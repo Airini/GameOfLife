@@ -12,8 +12,8 @@ import System.Environment
 main :: IO ()
 main = do
         args <- getArgs
-        let file | args == [] = error "\nDear Sir!\nGive me a GOL file!"
-                 | otherwise  = head args
+        let file | null args = error "\nDear Sir!\nGive me a GOL file!"
+                 | otherwise = head args
         simpleWorld <- readLife file 1
 
         select simpleWorld args

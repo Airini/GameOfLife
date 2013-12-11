@@ -25,18 +25,11 @@ type Pair = (Int, Int)
 data World a = World { dim :: Pair, cells :: [[a]] }
     deriving Eq
 
--- Requires -XDatatypeContexts which is deprecated :S
---data LiveCell a => World a = World { dim :: Pair, cells :: [[a]] }
---    deriving Eq
-
---data World a where
-    --World :: LiveCell a => a -> World a
---    World :: LiveCell a => { dim :: Pair, cells :: [[a]] } -> World a
---    deriving Eq
-
+-- Determines if two worlds are equivalent with respect to the liveness
+-- state of their cells
 equivLifeW :: LiveCell a => World a -> World a -> Bool
 equivLifeW v w = dim v == dim w &&
-                 all (\(a, b) -> eqLiveness a b)
+                 all (uncurry eqLiveness)
                      (concatMap zipCols zippedRows)
     where zippedRows = zip (cells v) (cells w)
           zipCols rp = zip (fst rp)  (snd rp)
@@ -62,7 +55,7 @@ instance LiveCell Bool where
   isDead    = not
   die c     = False
   born c    = True
-  survive c = True -- should make it better: c && True, equivalent to : c
+  survive c = True
   showText c | isAlive c = "#"
              | otherwise = "."
   getColour c = (1,1,0)
@@ -74,8 +67,8 @@ instance LiveCell Int where
   isDead c  = c == 0 || c > maxAge
   die c     = 0
   born c    = 1
-  survive c = c + 1  -- or: survive = (+1)
-  showText c = (replicate (prefix c') ' ') ++ t
+  survive c = c + 1
+  showText c = replicate (prefix c') ' ' ++ t
     where c' | isAlive c = c
              | otherwise = 1
           t | isAlive c = show c
@@ -91,7 +84,7 @@ maxAge = 100
 
 -- Figures out the prefix space padding for the display for Int cells
 prefix :: Int -> Int
-prefix n = (order maxAge) - (order n) + 1
+prefix n = order maxAge - order n + 1
 
 -- Calculates the order of magnitude of an integer in powers of 10
 order :: Int -> Int
@@ -99,11 +92,14 @@ order 0 = 0
 order n = 1 + order (div n' 10)
     where n' = abs n
 
-fullWorld :: Pair -> World Bool
-fullWorld d = World d (replicate (snd d) (replicate (fst d) True))
+---------
+-- Specific world creators
 
-emptyWorld :: Pair -> World Bool
-emptyWorld d = World d (replicate (snd d) (replicate (fst d) False))
+fullWorld :: LiveCell a => Pair -> World a
+fullWorld d = World d (replicate (snd d) (replicate (fst d) newlC))
+
+emptyWorld :: LiveCell a => Pair -> World a
+emptyWorld d = World d (replicate (snd d) (replicate (fst d) deadC))
 
 stillL :: World Bool
 stillL = World (4,4) [replicate 4 False,
